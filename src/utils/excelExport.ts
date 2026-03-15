@@ -17,18 +17,15 @@ function formatDateLong(dateStr: string): string {
 }
 
 /**
- * Cell map derived from the original RFI-Cladding.xlsx template structure.
- * The template is a single sheet with ~120 rows and 26 columns (A-Z).
- * Page 1 occupies rows 1-67, Page 2 occupies rows 68-115+.
- *
- * Row numbering is based on parsing the original Excel content.
- * Column letters: A=1, B=2, ..., E=5, P=16, Q=17, S=19, T=20, U=21, W=23, Y=25, Z=26
+ * Loads the original RFI-Cladding.xlsx template, fills in form data
+ * into the correct cells, and triggers a download.
+ * 
+ * Cell positions are determined by scanning for known label text,
+ * so the export adapts if the template layout shifts slightly.
  */
-
 export async function generateRfiExcel(data: RfiFormData) {
   const workbook = new ExcelJS.Workbook();
 
-  // Load the original template
   const response = await fetch('/RFI-Cladding.xlsx');
   const buffer = await response.arrayBuffer();
   await workbook.xlsx.load(buffer);
@@ -36,223 +33,263 @@ export async function generateRfiExcel(data: RfiFormData) {
   const ws = workbook.worksheets[0];
   if (!ws) throw new Error('Worksheet not found');
 
-  // Helper to safely set cell value while preserving formatting
+  // ── Helpers ──────────────────────────────────────────────
+
+  /** Set cell value preserving existing style */
   const setCell = (row: number, col: number, value: string | number) => {
-    const cell = ws.getRow(row).getCell(col);
-    cell.value = value;
+    ws.getRow(row).getCell(col).value = value;
   };
 
-  // Helper to find a cell containing specific text and return its position
+  /** Find first cell whose text includes `searchText` (full sheet scan) */
   const findCell = (searchText: string): { row: number; col: number } | null => {
     for (let r = 1; r <= ws.rowCount; r++) {
       const row = ws.getRow(r);
       for (let c = 1; c <= 26; c++) {
-        const cell = row.getCell(c);
-        const v = cell.value?.toString() || '';
-        if (v.includes(searchText)) {
-          return { row: r, col: c };
-        }
+        const v = row.getCell(c).value?.toString() || '';
+        if (v.includes(searchText)) return { row: r, col: c };
       }
     }
     return null;
   };
 
-  // ====== PAGE 1 DATA ======
+  /** Find first cell containing `text` in a given row, return col or null */
+  const findColInRow = (row: number, text: string): number | null => {
+    const r = ws.getRow(row);
+    for (let c = 1; c <= 26; c++) {
+      const v = r.getCell(c).value?.toString() || '';
+      if (v.includes(text)) return c;
+    }
+    return null;
+  };
 
-  // Inspection Number - find the cell containing "INSPECTION NO: IR-"
+  /** Find cell containing text, but only starting from `afterRow` */
+  const findCellAfter = (text: string, afterRow: number): { row: number; col: number } | null => {
+    for (let r = afterRow; r <= ws.rowCount; r++) {
+      const row = ws.getRow(r);
+      for (let c = 1; c <= 26; c++) {
+        const v = row.getCell(c).value?.toString() || '';
+        if (v.includes(text)) return { row: r, col: c };
+      }
+    }
+    return null;
+  };
+
+  /** Find col containing text in a row, starting from afterCol */
+  const findColInRowAfter = (row: number, text: string, afterCol: number): number | null => {
+    const r = ws.getRow(row);
+    for (let c = afterCol; c <= 26; c++) {
+      const v = r.getCell(c).value?.toString() || '';
+      if (v.includes(text)) return c;
+    }
+    return null;
+  };
+
+  /**
+   * For label cells like "Name:", "Designation:", "Date:" that contain both
+   * label and value in one cell, we overwrite the whole cell with "Label: value"
+   */
+  const setLabelValue = (row: number, col: number, label: string, value: string) => {
+    setCell(row, col, value ? `${label}: ${value}` : `${label}:`);
+  };
+
+  // ── PAGE 1 ───────────────────────────────────────────────
+
+  // Inspection No (top-right header)
   const inspNoCell = findCell('INSPECTION NO:');
   if (inspNoCell) {
     setCell(inspNoCell.row, inspNoCell.col, `INSPECTION NO: IR-${data.inspection_no ?? '____'}`);
   }
 
-  // Ref Drawing - find "Ref. Drawing" label, value is 4 cols right
+  // Ref Drawing & Date row
   const refDrawCell = findCell('Ref. Drawing');
   if (refDrawCell) {
-    // Value cell is typically 4 columns to the right of label
-    setCell(refDrawCell.row, refDrawCell.col + 4, data.ref_drawing || '');
-  }
-
-  // Inspection Date - find "Date" in the inspection details area (same row as Ref Drawing)
-  if (refDrawCell) {
-    // Date label and value are on the same row, in the right half
-    const dateCell = findCellInRow(ws, refDrawCell.row, 'Date');
-    if (dateCell) {
-      // Value is 4 cols right of "Date" label
-      setCell(refDrawCell.row, dateCell + 4, formatDateDMY(data.inspection_date));
+    // Value is in the merged area to the right of the label
+    // Scan for the value cell (typically col 5 onward)
+    for (let c = refDrawCell.col + 1; c <= refDrawCell.col + 6; c++) {
+      const v = ws.getRow(refDrawCell.row).getCell(c).value?.toString() || '';
+      if (v.length > 0 || c === refDrawCell.col + 4) {
+        setCell(refDrawCell.row, c, data.ref_drawing || '');
+        break;
+      }
+    }
+    // Date on same row
+    const dateCol = findColInRow(refDrawCell.row, 'Date');
+    if (dateCol) {
+      for (let c = dateCol + 1; c <= dateCol + 6; c++) {
+        const v = ws.getRow(refDrawCell.row).getCell(c).value?.toString() || '';
+        if (v.length > 0 || c === dateCol + 4) {
+          setCell(refDrawCell.row, c, formatDateDMY(data.inspection_date));
+          break;
+        }
+      }
     }
   }
 
-  // Work Site - find "Work Site" label
+  // Work Site & Time row
   const workSiteCell = findCell('Work Site');
   if (workSiteCell) {
-    setCell(workSiteCell.row, workSiteCell.col + 4, data.work_site || '');
-    // Time is on the same row
-    const timeCell = findCellInRow(ws, workSiteCell.row, 'Time');
-    if (timeCell) {
-      setCell(workSiteCell.row, timeCell + 4, data.inspection_time || '');
+    for (let c = workSiteCell.col + 1; c <= workSiteCell.col + 6; c++) {
+      const v = ws.getRow(workSiteCell.row).getCell(c).value?.toString() || '';
+      if (v.length > 0 || c === workSiteCell.col + 4) {
+        setCell(workSiteCell.row, c, data.work_site || '');
+        break;
+      }
+    }
+    const timeCol = findColInRow(workSiteCell.row, 'Time');
+    if (timeCol) {
+      for (let c = timeCol + 1; c <= timeCol + 6; c++) {
+        const v = ws.getRow(workSiteCell.row).getCell(c).value?.toString() || '';
+        if (v.length > 0 || c === timeCol + 4) {
+          setCell(workSiteCell.row, c, data.inspection_time || '');
+          break;
+        }
+      }
     }
   }
 
-  // Location - find "Location" label
+  // Location row
   const locationCell = findCell('Location');
-  if (locationCell && locationCell.row < 20) {
-    setCell(locationCell.row, locationCell.col + 4, data.location || '');
+  if (locationCell && locationCell.row < 30) {
+    for (let c = locationCell.col + 1; c <= locationCell.col + 6; c++) {
+      const v = ws.getRow(locationCell.row).getCell(c).value?.toString() || '';
+      if (v.length > 0 || c === locationCell.col + 4) {
+        setCell(locationCell.row, c, data.location || '');
+        break;
+      }
+    }
   }
 
-  // Received by [Client] - Name, Designation, Date
+  // Received by [Client] — Name/Designation/Date are label:value cells
   const receivedCell = findCell('Received by');
   if (receivedCell) {
-    // Name is ~1 row below, in column P area
-    const nameRow = receivedCell.row + 1;
-    const nameCol = findCellInRow(ws, nameRow, 'Name');
-    if (nameCol) {
-      setCell(nameRow, nameCol, data.received_by_name ? `Name: ${data.received_by_name}` : 'Name:');
-    }
-    // Designation is ~2 rows below name
-    const desigRow = nameRow + 2;
-    const desigCol = findCellInRow(ws, desigRow, 'Designation');
-    if (desigCol) {
-      setCell(desigRow, desigCol, data.received_by_designation ? `Designation: ${data.received_by_designation}` : 'Designation:');
-    }
-    // Date is ~2 rows below designation
-    const dateRow = desigRow + 2;
-    const dateCol = findCellInRow(ws, dateRow, 'Date');
-    if (dateCol) {
-      setCell(dateRow, dateCol, data.received_by_date ? `Date: ${formatDateDMY(data.received_by_date)}` : 'Date:');
-    }
+    fillSignatureBlock(ws, receivedCell.row, data.received_by_name, data.received_by_designation, data.received_by_date ? formatDateDMY(data.received_by_date) : '', findCellAfter, setLabelValue);
   }
 
-  // Inspection Items 1-5 - find "Arrange Inspection for:"
+  // Inspection items 1-5
   const arrangeCell = findCell('Arrange Inspection for');
   if (arrangeCell) {
     const items = [data.inspection_item_1, data.inspection_item_2, data.inspection_item_3, data.inspection_item_4, data.inspection_item_5];
-    items.forEach((item, i) => {
-      setCell(arrangeCell.row + 1 + i, 2, item || ''); // Column B
-    });
+    // Items are in rows below, column B (col 2), numbered 1-5
+    let itemIdx = 0;
+    for (let r = arrangeCell.row + 1; r < arrangeCell.row + 10 && itemIdx < 5; r++) {
+      const numVal = ws.getRow(r).getCell(1).value?.toString()?.trim() || '';
+      if (/^[1-5]$/.test(numVal)) {
+        setCell(r, 2, items[itemIdx] || '');
+        itemIdx++;
+      }
+    }
   }
 
-  // Weather condition - find row after "Weather condition:"
+  // Weather condition
   const weatherCell = findCell('Weather condition');
   if (weatherCell) {
     setCell(weatherCell.row + 1, 1, data.weather_condition || '');
   }
 
-  // Pre-Inspection - Name, Designation, Date
+  // Pre-Inspection checked by Contractor
   const preInspCell = findCell('Pre-Inspection checked');
   if (preInspCell) {
-    const nameRow = preInspCell.row + 1;
-    const nameCol = findCellInRow(ws, nameRow, 'Name');
-    if (nameCol) {
-      setCell(nameRow, nameCol, data.pre_inspection_name ? `Name: ${data.pre_inspection_name}` : 'Name:');
-    }
-    const desigRow = nameRow + 2;
-    const desigCol = findCellInRow(ws, desigRow, 'Designation');
-    if (desigCol) {
-      setCell(desigRow, desigCol, data.pre_inspection_designation ? `Designation: ${data.pre_inspection_designation}` : 'Designation:');
-    }
-    const dateRow = desigRow + 2;
-    const dateCol = findCellInRow(ws, dateRow, 'Date');
-    if (dateCol) {
-      setCell(dateRow, dateCol, data.pre_inspection_date ? `Date: ${formatDateDMY(data.pre_inspection_date)}` : 'Date:');
-    }
+    fillSignatureBlock(ws, preInspCell.row, data.pre_inspection_name, data.pre_inspection_designation, data.pre_inspection_date ? formatDateDMY(data.pre_inspection_date) : '', findCellAfter, setLabelValue);
   }
 
-  // Comments
-  const commentsCell = findCell('Relevant Sub-clause');
-  if (commentsCell) {
-    setCell(commentsCell.row + 1, 1, data.comments || '');
+  // Comments / Relevant Sub-clause
+  const subclauseCell = findCell('Relevant Sub-clause');
+  if (subclauseCell) {
+    setCell(subclauseCell.row + 1, 1, data.comments || '');
   }
 
-  // Client Representative - find label, then fill Name/Designation/Date
+  // Client Representative (page 1, before row 65)
   const clientRepCell = findCell('Client Representative');
-  if (clientRepCell && clientRepCell.row < 60) {
-    // Name row is 1 below, in column P area
-    const nameRow = clientRepCell.row + 1;
-    const nameCol = findCellInRow(ws, nameRow, 'Name');
-    if (nameCol) {
-      setCell(nameRow, nameCol, data.client_rep_name ? `Name: ${data.client_rep_name}` : 'Name:');
-    }
-    const desigRow = nameRow + 2;
-    const desigCol = findCellInRow(ws, desigRow, 'Designation');
-    if (desigCol) {
-      setCell(desigRow, desigCol, data.client_rep_designation ? `Designation: ${data.client_rep_designation}` : 'Designation:');
-    }
-    const dateRow = desigRow + 2;
-    const dateCol = findCellInRow(ws, dateRow, 'Date');
-    if (dateCol) {
-      setCell(dateRow, dateCol, data.client_rep_date ? `Date: ${formatDateDMY(data.client_rep_date)}` : 'Date:');
-    }
+  if (clientRepCell && clientRepCell.row < 65) {
+    fillSignatureBlock(ws, clientRepCell.row, data.client_rep_name, data.client_rep_designation, data.client_rep_date ? formatDateDMY(data.client_rep_date) : '', findCellAfter, setLabelValue);
   }
 
-  // Contractor Representative (page 1) - find label after client rep
-  const contractorRepCell = findCellAfterRow('Contractor Representative', ws, 55);
-  if (contractorRepCell && contractorRepCell.row < 70) {
-    const nameRow = contractorRepCell.row + 1;
-    const nameCol = findCellInRow(ws, nameRow, 'Name');
-    if (nameCol) {
-      setCell(nameRow, nameCol, data.contractor_rep_name ? `Name: ${data.contractor_rep_name}` : 'Name:');
-    }
-    const desigRow = nameRow + 2;
-    const desigCol = findCellInRow(ws, desigRow, 'Designation');
-    if (desigCol) {
-      setCell(desigRow, desigCol, data.contractor_rep_designation ? `Designation: ${data.contractor_rep_designation}` : 'Designation:');
-    }
-    const dateRow = desigRow + 2;
-    const dateCol = findCellInRow(ws, dateRow, 'Date');
-    if (dateCol) {
-      setCell(dateRow, dateCol, data.contractor_rep_date ? `Date: ${formatDateDMY(data.contractor_rep_date)}` : 'Date:');
-    }
+  // Contractor Representative (page 1, after Client Rep)
+  const contractorRepCell = findCellAfter('Contractor Representative', (clientRepCell?.row ?? 60) + 1);
+  if (contractorRepCell && contractorRepCell.row < 75) {
+    fillSignatureBlock(ws, contractorRepCell.row, data.contractor_rep_name, data.contractor_rep_designation, data.contractor_rep_date ? formatDateDMY(data.contractor_rep_date) : '', findCellAfter, setLabelValue);
   }
 
-  // ====== PAGE 2 DATA ======
+  // ── PAGE 2 ───────────────────────────────────────────────
 
-  // Inspection # value on page 2
+  // Inspection # on page 2
   const inspHashCell = findCell('Inspection #');
   if (inspHashCell) {
-    // Value is 4 cols right
-    setCell(inspHashCell.row, inspHashCell.col + 4, `RFI-${data.inspection_no ?? ''}`);
+    // Find the value cell to the right
+    for (let c = inspHashCell.col + 1; c <= inspHashCell.col + 6; c++) {
+      const v = ws.getRow(inspHashCell.row).getCell(c).value?.toString() || '';
+      if (v.includes('RFI') || c === inspHashCell.col + 4) {
+        setCell(inspHashCell.row, c, `RFI-${data.inspection_no ?? ''}`);
+        break;
+      }
+    }
   }
 
-  // Page 2 Date (find "Date:" after row 68)
-  const p2DateCell = findCellAfterRow('Date:', ws, 68);
-  if (p2DateCell && p2DateCell.row < 80) {
-    setCell(p2DateCell.row, p2DateCell.col + 4, formatDateLong(data.inspection_date));
+  // Page 2 Date
+  const checklistHeader = findCell('CHECKLIST FOR');
+  const p2StartRow = checklistHeader ? checklistHeader.row : 70;
+
+  const p2DateCell = findCellAfter('Date:', p2StartRow);
+  if (p2DateCell && p2DateCell.row < p2StartRow + 15) {
+    for (let c = p2DateCell.col + 1; c <= p2DateCell.col + 6; c++) {
+      const v = ws.getRow(p2DateCell.row).getCell(c).value?.toString() || '';
+      if (v.length > 0 || c === p2DateCell.col + 4) {
+        setCell(p2DateCell.row, c, formatDateLong(data.inspection_date));
+        break;
+      }
+    }
   }
 
   // Page 2 Time
-  const p2TimeCell = findCellAfterRow('Time:', ws, 68);
-  if (p2TimeCell && p2TimeCell.row < 80) {
-    setCell(p2TimeCell.row, p2TimeCell.col + 4, data.inspection_time || '');
+  const p2TimeCell = findCellAfter('Time:', p2StartRow);
+  if (p2TimeCell && p2TimeCell.row < p2StartRow + 15) {
+    for (let c = p2TimeCell.col + 1; c <= p2TimeCell.col + 6; c++) {
+      const v = ws.getRow(p2TimeCell.row).getCell(c).value?.toString() || '';
+      if (v.length > 0 || c === p2TimeCell.col + 4) {
+        setCell(p2TimeCell.row, c, data.inspection_time || '');
+        break;
+      }
+    }
   }
 
   // Page 2 Location
-  const p2LocCell = findCellAfterRow('Location:', ws, 68);
-  if (p2LocCell && p2LocCell.row < 80) {
-    setCell(p2LocCell.row, p2LocCell.col + 4, data.location || '');
+  const p2LocCell = findCellAfter('Location:', p2StartRow);
+  if (p2LocCell && p2LocCell.row < p2StartRow + 15) {
+    for (let c = p2LocCell.col + 1; c <= p2LocCell.col + 6; c++) {
+      const v = ws.getRow(p2LocCell.row).getCell(c).value?.toString() || '';
+      if (v.length > 0 || c === p2LocCell.col + 4) {
+        setCell(p2LocCell.row, c, data.location || '');
+        break;
+      }
+    }
   }
 
-  // Checklist items - find "WORKS INSPECTED" header row, items start 1 row below
+  // Checklist items
   const worksCell = findCell('WORKS INSPECTED');
   if (worksCell) {
-    // Find the result column (contains tick/cross/NA header)
-    const resultCol = findCellInRow(ws, worksCell.row, '/NA') || findCellInRow(ws, worksCell.row, 'NA');
-    // Find comments column
-    const commCol = findCellInRow(ws, worksCell.row, 'COMMENTS');
+    // Find the result column header (ü/û/NA or similar)
+    let resultCol: number | null = null;
+    let commCol: number | null = null;
+    
+    // Scan header row for result and comments columns
+    for (let c = 1; c <= 26; c++) {
+      const v = ws.getRow(worksCell.row).getCell(c).value?.toString() || '';
+      if (v.includes('NA') || v.includes('û') || v.includes('ü')) resultCol = c;
+      if (v.toUpperCase().includes('COMMENT')) commCol = c;
+    }
 
-    // Items are in rows below the header, every other row (with blank rows between)
+    // Iterate through rows below header, matching checklist items
     let itemIdx = 0;
-    for (let r = worksCell.row + 1; r < worksCell.row + 30 && itemIdx < data.checklist_items.length; r++) {
-      const cellVal = ws.getRow(r).getCell(2).value?.toString() || '';
-      // Check if this row has checklist content (non-empty cell in column B)
-      if (cellVal.trim().length > 0) {
+    for (let r = worksCell.row + 1; r < worksCell.row + 40 && itemIdx < data.checklist_items.length; r++) {
+      // Check if col B has checklist description text
+      const cellVal = ws.getRow(r).getCell(2).value?.toString()?.trim() || '';
+      if (cellVal.length > 5) {
         const item = data.checklist_items[itemIdx];
         if (item) {
-          // Write result
           if (resultCol) {
-            const sym = item.result === 'pass' ? '✓' : item.result === 'fail' ? '✗' : item.result === 'na' ? 'N/A' : '';
+            const sym = item.result === 'pass' ? 'ü' : item.result === 'fail' ? 'û' : item.result === 'na' ? 'N/A' : '';
             setCell(r, resultCol, sym);
           }
-          // Write comments
           if (commCol) {
             setCell(r, commCol, item.comments || '');
           }
@@ -268,35 +305,59 @@ export async function generateRfiExcel(data: RfiFormData) {
     setCell(compWorksCell.row + 1, 1, data.completed_works_comments || '');
   }
 
-  // Page 2 Representatives
-  // Find "Contractor Representative" after row 100
-  const p2ContRepCell = findCellAfterRow('Contractor Representative', ws, 100);
+  // Page 2 Representatives (bottom of sheet)
+  // Find "Contractor Representative" after the checklist area
+  const p2ContRepCell = findCellAfter('Contractor Representative', (compWorksCell?.row ?? 100) + 1);
   if (p2ContRepCell) {
-    // Contractor name/designation are in the row below, columns around E
+    // Contractor side: Name/Designation in left columns
     const nameRow = p2ContRepCell.row + 1;
-    // Find "Name:" in that row for contractor side (column A area)
-    const cNameCol = findCellInRow(ws, nameRow, 'Name');
+    const cNameCol = findColInRow(nameRow, 'Name');
     if (cNameCol && cNameCol < 10) {
-      setCell(nameRow, cNameCol + 4, data.page2_contractor_name || '');
+      // Value is in merged cells to the right
+      for (let c = cNameCol + 1; c <= cNameCol + 6; c++) {
+        const v = ws.getRow(nameRow).getCell(c).value?.toString() || '';
+        if (v.length > 0 || c === cNameCol + 4) {
+          setCell(nameRow, c, data.page2_contractor_name || '');
+          break;
+        }
+      }
     }
     const desigRow = nameRow + 1;
-    const cDesigCol = findCellInRow(ws, desigRow, 'Designation');
+    const cDesigCol = findColInRow(desigRow, 'Designation');
     if (cDesigCol && cDesigCol < 10) {
-      setCell(desigRow, cDesigCol + 4, data.page2_contractor_designation || '');
+      for (let c = cDesigCol + 1; c <= cDesigCol + 6; c++) {
+        const v = ws.getRow(desigRow).getCell(c).value?.toString() || '';
+        if (v.length > 0 || c === cDesigCol + 4) {
+          setCell(desigRow, c, data.page2_contractor_designation || '');
+          break;
+        }
+      }
     }
 
-    // Client side - find "Name:" in the right half of the row
-    const clNameCol = findCellInRowAfterCol(ws, nameRow, 'Name', 10);
+    // Client side: Name/Designation in right columns
+    const clNameCol = findColInRowAfter(nameRow, 'Name', 10);
     if (clNameCol) {
-      setCell(nameRow, clNameCol + 4, data.page2_client_name || '');
+      for (let c = clNameCol + 1; c <= clNameCol + 6; c++) {
+        const v = ws.getRow(nameRow).getCell(c).value?.toString() || '';
+        if (v.length > 0 || c === clNameCol + 4) {
+          setCell(nameRow, c, data.page2_client_name || '');
+          break;
+        }
+      }
     }
-    const clDesigCol = findCellInRowAfterCol(ws, desigRow, 'Designation', 10);
+    const clDesigCol = findColInRowAfter(desigRow, 'Designation', 10);
     if (clDesigCol) {
-      setCell(desigRow, clDesigCol + 4, data.page2_client_designation || '');
+      for (let c = clDesigCol + 1; c <= clDesigCol + 6; c++) {
+        const v = ws.getRow(desigRow).getCell(c).value?.toString() || '';
+        if (v.length > 0 || c === clDesigCol + 4) {
+          setCell(desigRow, c, data.page2_client_designation || '');
+          break;
+        }
+      }
     }
   }
 
-  // Generate and download
+  // ── Download ─────────────────────────────────────────────
   const outBuffer = await workbook.xlsx.writeBuffer();
   const blob = new Blob([outBuffer], {
     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -311,34 +372,30 @@ export async function generateRfiExcel(data: RfiFormData) {
   URL.revokeObjectURL(url);
 }
 
-// Helper: find a cell containing text in a specific row, return column number
-function findCellInRow(ws: ExcelJS.Worksheet, row: number, text: string): number | null {
-  const r = ws.getRow(row);
-  for (let c = 1; c <= 26; c++) {
-    const v = r.getCell(c).value?.toString() || '';
-    if (v.includes(text)) return c;
+/**
+ * Fill a signature block (Name/Designation/Date) that appears
+ * as "Name: value" style cells below a section header.
+ */
+function fillSignatureBlock(
+  ws: ExcelJS.Worksheet,
+  headerRow: number,
+  name: string,
+  designation: string,
+  date: string,
+  findCellAfter: (text: string, afterRow: number) => { row: number; col: number } | null,
+  setLabelValue: (row: number, col: number, label: string, value: string) => void,
+) {
+  // Search for Name:/Designation:/Date: within 10 rows of the header
+  const nameCell = findCellAfter('Name', headerRow + 1);
+  if (nameCell && nameCell.row <= headerRow + 10) {
+    setLabelValue(nameCell.row, nameCell.col, 'Name', name);
   }
-  return null;
-}
-
-// Helper: find a cell containing text in a row, but only after a specific column
-function findCellInRowAfterCol(ws: ExcelJS.Worksheet, row: number, text: string, afterCol: number): number | null {
-  const r = ws.getRow(row);
-  for (let c = afterCol; c <= 26; c++) {
-    const v = r.getCell(c).value?.toString() || '';
-    if (v.includes(text)) return c;
+  const desigCell = findCellAfter('Designation', (nameCell?.row ?? headerRow) + 1);
+  if (desigCell && desigCell.row <= headerRow + 10) {
+    setLabelValue(desigCell.row, desigCell.col, 'Designation', designation);
   }
-  return null;
-}
-
-// Helper: find first cell containing text after a specific row
-function findCellAfterRow(text: string, ws: ExcelJS.Worksheet, afterRow: number): { row: number; col: number } | null {
-  for (let r = afterRow; r <= ws.rowCount; r++) {
-    const row = ws.getRow(r);
-    for (let c = 1; c <= 26; c++) {
-      const v = row.getCell(c).value?.toString() || '';
-      if (v.includes(text)) return { row: r, col: c };
-    }
+  const dateCell = findCellAfter('Date', (desigCell?.row ?? headerRow) + 1);
+  if (dateCell && dateCell.row <= headerRow + 10) {
+    setLabelValue(dateCell.row, dateCell.col, 'Date', date);
   }
-  return null;
 }
