@@ -138,11 +138,11 @@ export async function generateRfiExcel(data: RfiFormData) {
     }
   }
 
-  // Location row — preserved from template, overwritten only if form has value
+  // Location row — locked to original template value
   const locationCell = findCell('Location');
   if (locationCell && locationCell.row < 30) {
     const origLoc = readValueCell(locationCell.row, locationCell.col);
-    setCell(locationCell.row, origLoc.col, data.location || origLoc.value);
+    setCell(locationCell.row, origLoc.col, origLoc.value);
   }
 
   // Received by [Client] — Name/Designation/Date are label:value cells
