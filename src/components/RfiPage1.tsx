@@ -24,8 +24,13 @@ const RfiPage1 = ({ data, onChange }: RfiPage1Props) => {
             <img src={hdcLogo} alt="HDC" className="h-[36px] mb-[2px]" />
             <div className="text-[8px] mt-[1px]">PMD-2021-FRM-108 _ V 1.2</div>
           </div>
-          <div className="text-right text-[10px]">
-            INSPECTION NO: IR-{data.inspection_no ?? '____'}
+          <div className="text-right text-[10px] flex items-center gap-1">
+            <span>INSPECTION NO: IR-</span>
+            <input
+              className="w-[50px] bg-[#FFFDE7] border-0 border-b border-[#999] px-1 py-0 text-[10px] leading-[16px] focus:outline-none focus:bg-[#FFF9C4] text-right"
+              value={data.inspection_no ?? ''}
+              onChange={(e) => onChange({ inspection_no: e.target.value === '' ? undefined : Number(e.target.value) })}
+            />
           </div>
         </div>
 
