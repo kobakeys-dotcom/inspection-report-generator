@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { RfiFormData, EMPTY_RFI } from '@/types/rfi';
 import { rfiApi } from '@/services/rfiApi';
-import { generateRfiPdf } from '@/utils/pdfExport';
+import { generateRfiExcel } from '@/utils/excelExport';
 import RfiPage1 from '@/components/RfiPage1';
 import RfiPage2 from '@/components/RfiPage2';
 import { ArrowLeft, ArrowRight, Save, FileDown } from 'lucide-react';
@@ -43,12 +43,13 @@ const RfiFormPage = ({ mode = 'create', initialData }: RfiFormPageProps) => {
     }
   };
 
-  const handleExportPdf = () => {
+  const handleExportExcel = async () => {
     try {
-      generateRfiPdf(formData);
-      toast.success('PDF exported successfully');
-    } catch {
-      toast.error('Failed to export PDF');
+      await generateRfiExcel(formData);
+      toast.success('Excel exported successfully');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to export Excel');
     }
   };
 
@@ -90,11 +91,11 @@ const RfiFormPage = ({ mode = 'create', initialData }: RfiFormPageProps) => {
             <Button
               variant="outline"
               size="sm"
-              onClick={handleExportPdf}
+              onClick={handleExportExcel}
               className="text-[11px] h-7 border-gray-400"
             >
               <FileDown className="h-3.5 w-3.5 mr-1" />
-              Export PDF
+              Export Excel
             </Button>
             <Button
               size="sm"
