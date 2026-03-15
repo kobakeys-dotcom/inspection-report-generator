@@ -43,12 +43,13 @@ const RfiFormPage = ({ mode = 'create', initialData }: RfiFormPageProps) => {
     }
   };
 
-  const handleExportPdf = () => {
+  const handleExportExcel = async () => {
     try {
-      generateRfiPdf(formData);
-      toast.success('PDF exported successfully');
-    } catch {
-      toast.error('Failed to export PDF');
+      await generateRfiExcel(formData);
+      toast.success('Excel exported successfully');
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to export Excel');
     }
   };
 
