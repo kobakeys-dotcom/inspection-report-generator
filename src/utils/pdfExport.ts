@@ -200,9 +200,9 @@ export async function generateRfiPdf(data: RfiFormData) {
   y += preH + 2;
 
   // ---- Comments (URBANCO USE ONLY) ----
-  fillBox(m, y, cW, rh, green);
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(fs); doc.setTextColor(255);
-  doc.text('Comments (URBANCO USE ONLY):', pageW / 2, textY(y), { align: 'center' }); doc.setTextColor(0); y += rh;
+  fillBox(m, y, cW, rh, amber);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(fs); doc.setTextColor(0);
+  doc.text('Comments (URBANCO USE ONLY):', pageW / 2, textY(y), { align: 'center' }); y += rh;
   box(m, y, 38, rh); box(m + 38, y, cW - 38, rh);
   doc.setFont('helvetica', 'normal'); doc.setFontSize(6);
   doc.text('Relevant Sub-clause/Term', m + 1.5, textY(y)); y += rh;
@@ -288,13 +288,13 @@ export async function generateRfiPdf(data: RfiFormData) {
 
   y += 20;
 
-  // Checklist table
-  const sym = (r: string) => r === 'pass' ? '✓' : r === 'fail' ? '✗' : r === 'na' ? 'N/A' : '';
+  // Checklist table - use ASCII-safe symbols for jsPDF compatibility
+  const sym = (r: string) => r === 'pass' ? 'Y' : r === 'fail' ? 'X' : r === 'na' ? 'N/A' : '';
 
   autoTable(doc, {
     startY: y,
     margin: { left: m, right: m },
-    head: [['WORKS INSPECTED', '✓/✗/NA', 'COMMENTS']],
+    head: [['WORKS INSPECTED', 'Y/X/NA', 'COMMENTS']],
     body: data.checklist_items.map((item) => [item.description, sym(item.result), item.comments || '']),
     styles: {
       fontSize: 7,
