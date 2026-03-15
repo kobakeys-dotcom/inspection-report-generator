@@ -87,11 +87,16 @@ export async function generateRfiPdf(data: RfiFormData) {
   doc.line(m, y, pageW - m, y); doc.setDrawColor(120); doc.setLineWidth(lw);
   y += 4;
 
-  // Project Details (60% width)
-  const projW = cW * 0.6;
-  fillBox(m, y, projW, rh, green);
+  // Project Details (55% width)
+  const projW = cW * 0.55;
+  // Orange accent on left edge of green bar
+  const orangeAccent: [number, number, number] = [255, 143, 0];
+  doc.setFillColor(orangeAccent[0], orangeAccent[1], orangeAccent[2]);
+  doc.rect(m, y, 1.2, rh, 'F');
+  fillBox(m + 1.2, y, projW - 1.2, rh, green);
+  box(m, y, projW, rh);
   doc.setFontSize(fs); doc.setFont('helvetica', 'bold'); doc.setTextColor(255);
-  doc.text('Project Details', m + 2, y + 3.2); doc.setTextColor(0); y += rh;
+  doc.text('Project Details', m + 3, y + 3.2); doc.setTextColor(0); y += rh;
 
   const projRows = [['Project', PROJECT_INFO.project], ['Contractor', PROJECT_INFO.contractor], ['Contract No', PROJECT_INFO.contract_no], ['Client', PROJECT_INFO.client]];
   projRows.forEach(([l, v]) => {
@@ -99,8 +104,8 @@ export async function generateRfiPdf(data: RfiFormData) {
     label(l, m + 1.5, y + 3.2); val(v, m + labelW + 1.5, y + 3.2); y += rh;
   });
 
-  // BLT logo
-  if (bltB64) doc.addImage(bltB64, 'PNG', m + projW + 10, y - rh * 3.5, 38, 13);
+  // BLT logo - positioned to the right of Project Details table, vertically centered
+  if (bltB64) doc.addImage(bltB64, 'PNG', m + projW + 8, y - rh * 3, 40, 14);
   y += 3;
 
   // Inspection Details
