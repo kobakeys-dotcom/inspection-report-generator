@@ -192,7 +192,11 @@ export async function generateRfiPdf(data: RfiFormData) {
   y += preH + 2;
 
   // ---- Comments (URBANCO USE ONLY) ----
-  fillBox(m, y, cW, rh, amber);
+  // Green accent on left edge of amber bar
+  doc.setFillColor(green[0], green[1], green[2]);
+  doc.rect(m, y, 1.2, rh, 'F');
+  fillBox(m + 1.2, y, cW - 1.2, rh, amber);
+  box(m, y, cW, rh);
   doc.setFont('helvetica', 'bold'); doc.setFontSize(fs); doc.setTextColor(0);
   doc.text('Comments (URBANCO USE ONLY):', pageW / 2, textY(y), { align: 'center' }); y += rh;
   box(m, y, 38, rh); box(m + 38, y, cW - 38, rh);
