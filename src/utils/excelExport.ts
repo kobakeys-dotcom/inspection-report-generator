@@ -92,6 +92,15 @@ export async function generateRfiExcel(data: RfiFormData) {
     setCell(row, col, value ? `${label}: ${value}` : `${label}:`);
   };
 
+  // ── Helper to read a value cell (first non-empty cell after label col) ──
+  const readValueCell = (row: number, labelCol: number): { col: number; value: string } => {
+    for (let c = labelCol + 1; c <= labelCol + 6; c++) {
+      const v = ws.getRow(row).getCell(c).value?.toString() || '';
+      if (v.length > 0) return { col: c, value: v };
+    }
+    return { col: labelCol + 4, value: '' };
+  };
+
   // ── PAGE 1 ───────────────────────────────────────────────
 
   // Inspection No (top-right header)
@@ -100,48 +109,40 @@ export async function generateRfiExcel(data: RfiFormData) {
     setCell(inspNoCell.row, inspNoCell.col, `INSPECTION NO: IR-${data.inspection_no ?? '____'}`);
   }
 
-  // Ref Drawing & Date row — Ref Drawing value kept from template (locked)
+  // Ref Drawing & Date row — Ref Drawing value preserved from template
   const refDrawCell = findCell('Ref. Drawing');
   if (refDrawCell) {
-    // Only write Date, keep Ref Drawing original
+    // Re-write original Ref Drawing value to prevent ExcelJS merge corruption
+    const origRefDraw = readValueCell(refDrawCell.row, refDrawCell.col);
+    setCell(refDrawCell.row, origRefDraw.col, origRefDraw.value);
+
+    // Date on same row
     const dateCol = findColInRow(refDrawCell.row, 'Date');
     if (dateCol) {
-      for (let c = dateCol + 1; c <= dateCol + 6; c++) {
-        const v = ws.getRow(refDrawCell.row).getCell(c).value?.toString() || '';
-        if (v.length > 0 || c === dateCol + 4) {
-          setCell(refDrawCell.row, c, formatDateDMY(data.inspection_date));
-          break;
-        }
-      }
+      const origDate = readValueCell(refDrawCell.row, dateCol);
+      setCell(refDrawCell.row, origDate.col, data.inspection_date ? formatDateDMY(data.inspection_date) : origDate.value);
     }
   }
 
-  // Work Site & Time row — Work Site value kept from template (locked)
+  // Work Site & Time row — Work Site value preserved from template
   const workSiteCell = findCell('Work Site');
   if (workSiteCell) {
-    // Only write Time, keep Work Site original
+    // Re-write original Work Site value
+    const origWorkSite = readValueCell(workSiteCell.row, workSiteCell.col);
+    setCell(workSiteCell.row, origWorkSite.col, origWorkSite.value);
+
     const timeCol = findColInRow(workSiteCell.row, 'Time');
     if (timeCol) {
-      for (let c = timeCol + 1; c <= timeCol + 6; c++) {
-        const v = ws.getRow(workSiteCell.row).getCell(c).value?.toString() || '';
-        if (v.length > 0 || c === timeCol + 4) {
-          setCell(workSiteCell.row, c, data.inspection_time || '');
-          break;
-        }
-      }
+      const origTime = readValueCell(workSiteCell.row, timeCol);
+      setCell(workSiteCell.row, origTime.col, data.inspection_time || origTime.value);
     }
   }
 
-  // Location row
+  // Location row — preserved from template, overwritten only if form has value
   const locationCell = findCell('Location');
   if (locationCell && locationCell.row < 30) {
-    for (let c = locationCell.col + 1; c <= locationCell.col + 6; c++) {
-      const v = ws.getRow(locationCell.row).getCell(c).value?.toString() || '';
-      if (v.length > 0 || c === locationCell.col + 4) {
-        setCell(locationCell.row, c, data.location || '');
-        break;
-      }
-    }
+    const origLoc = readValueCell(locationCell.row, locationCell.col);
+    setCell(locationCell.row, origLoc.col, data.location || origLoc.value);
   }
 
   // Received by [Client] — Name/Designation/Date are label:value cells
