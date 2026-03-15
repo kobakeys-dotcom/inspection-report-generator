@@ -119,8 +119,8 @@ export async function generateRfiPdf(data: RfiFormData) {
     label(l, m + 1.5, textY(y)); val(v, m + labelW + 1.5, textY(y)); y += rh;
   });
 
-  // BLT logo - positioned to the right of Project Details table
-  if (bltB64) doc.addImage(bltB64, 'PNG', m + projW + 10, y - rh * 3, 42, 14);
+  // BLT logo - right of Project Details, vertically centered against data rows
+  if (bltB64) doc.addImage(bltB64, 'PNG', m + projW + 8, y - rh * 2.5, 38, 13);
   y += 3;
 
   // ---- Inspection Details ----
