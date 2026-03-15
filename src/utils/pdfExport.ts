@@ -102,12 +102,13 @@ export async function generateRfiPdf(data: RfiFormData) {
   doc.line(m, y, rx, y); doc.setDrawColor(120); doc.setLineWidth(lw);
   y += 5;
 
-  // ---- Project Details (55% width) ----
-  const projW = cW * 0.55;
+  // ---- Project Details (58% width) ----
+  const projW = cW * 0.58;
   fillBox(m, y, projW, rh, green);
   doc.setFontSize(fs); doc.setFont('helvetica', 'bold'); doc.setTextColor(255);
   doc.text('Project Details', m + 2, textY(y)); doc.setTextColor(0); y += rh;
 
+  const projLabelW = 24;
   const projRows = [
     ['Project', PROJECT_INFO.project],
     ['Contractor', PROJECT_INFO.contractor],
@@ -115,12 +116,12 @@ export async function generateRfiPdf(data: RfiFormData) {
     ['Client', PROJECT_INFO.client],
   ];
   projRows.forEach(([l, v]) => {
-    box(m, y, labelW, rh); box(m + labelW, y, projW - labelW, rh);
-    label(l, m + 1.5, textY(y)); val(v, m + labelW + 1.5, textY(y)); y += rh;
+    box(m, y, projLabelW, rh); box(m + projLabelW, y, projW - projLabelW, rh);
+    label(l, m + 1.5, textY(y)); val(v, m + projLabelW + 1.5, textY(y)); y += rh;
   });
 
   // BLT logo - right of Project Details, vertically centered against data rows
-  if (bltB64) doc.addImage(bltB64, 'PNG', m + projW + 6, y - rh * 3.2, 50, 17);
+  if (bltB64) doc.addImage(bltB64, 'PNG', m + projW + 8, y - rh * 3, 44, 15);
   y += 3;
 
   // ---- Inspection Details ----
