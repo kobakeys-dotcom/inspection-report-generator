@@ -52,25 +52,25 @@ const RfiPage1 = ({ data, onChange }: RfiPage1Props) => {
           <table className="border-collapse" style={{ width: '58%' }}>
             <tbody>
               <tr>
-                <td colSpan={2} className={greenBar}>
+                <td colSpan={2} className="bg-[#4CAF50] text-white text-[10px] font-semibold px-[6px] py-[3px]">
                   Project Details
                 </td>
               </tr>
               <tr>
-                <td className={tdLabel} style={{ width: '100px' }}>Project</td>
-                <td className={td}>{PROJECT_INFO.project}</td>
+                <td className="border-[0.5px] border-[#888] border-t-0 px-[6px] py-[3px] text-[10px] leading-[14px] font-semibold" style={{ width: '100px' }}>Project</td>
+                <td className="border-[0.5px] border-[#888] border-t-0 px-[6px] py-[3px] text-[10px] leading-[14px]">{PROJECT_INFO.project}</td>
               </tr>
               <tr>
-                <td className={tdLabel}>Contractor</td>
-                <td className={td}>{PROJECT_INFO.contractor}</td>
+                <td className="border-[0.5px] border-[#888] px-[6px] py-[3px] text-[10px] leading-[14px] font-semibold">Contractor</td>
+                <td className="border-[0.5px] border-[#888] px-[6px] py-[3px] text-[10px] leading-[14px]">{PROJECT_INFO.contractor}</td>
               </tr>
               <tr>
-                <td className={tdLabel}>Contract No</td>
-                <td className={td}>{PROJECT_INFO.contract_no}</td>
+                <td className="border-[0.5px] border-[#888] px-[6px] py-[3px] text-[10px] leading-[14px] font-semibold">Contract No</td>
+                <td className="border-[0.5px] border-[#888] px-[6px] py-[3px] text-[10px] leading-[14px]">{PROJECT_INFO.contract_no}</td>
               </tr>
               <tr>
-                <td className={tdLabel}>Client</td>
-                <td className={td}>{PROJECT_INFO.client}</td>
+                <td className="border-[0.5px] border-[#888] px-[6px] py-[3px] text-[10px] leading-[14px] font-semibold">Client</td>
+                <td className="border-[0.5px] border-[#888] px-[6px] py-[3px] text-[10px] leading-[14px]">{PROJECT_INFO.client}</td>
               </tr>
             </tbody>
           </table>
