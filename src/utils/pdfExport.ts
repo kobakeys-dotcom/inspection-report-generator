@@ -34,7 +34,7 @@ export async function generateRfiPdf(data: RfiFormData) {
   let y = m;
   const lw = 0.2; // line weight matching original thin borders
   const green: [number, number, number] = [76, 175, 80];
-  const amber: [number, number, number] = [245, 194, 66];
+  const amber: [number, number, number] = [230, 168, 23];
   const rh = 5; // row height (slightly taller to match original)
   const fs = 7.5; // font size
   const rcvX = pageW / 2; // right column value start X
