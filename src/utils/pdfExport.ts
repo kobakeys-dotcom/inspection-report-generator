@@ -210,9 +210,11 @@ export async function generateRfiPdf(data: RfiFormData) {
   y += preH + 2;
 
   // ---- Comments (URBANCO USE ONLY) ----
-  fillBox(m, y, cW, rh, amber);
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(fs); doc.setTextColor(0);
-  doc.text('Comments (URBANCO USE ONLY):', pageW / 2, textY(y), { align: 'center' }); y += rh;
+  fillBox(m, y, cW, rh, green);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(fs); doc.setTextColor(255);
+  doc.text('Comments (URBANCO USE ONLY):', pageW / 2, textY(y), { align: 'center' });
+  doc.setTextColor(0);
+  y += rh;
   box(m, y, 38, rh); box(m + 38, y, cW - 38, rh);
   doc.setFont('helvetica', 'normal'); doc.setFontSize(6);
   doc.text('Relevant Sub-clause/Term', m + 1.5, textY(y)); y += rh;
