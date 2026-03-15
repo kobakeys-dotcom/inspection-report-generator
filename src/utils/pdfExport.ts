@@ -288,13 +288,13 @@ export async function generateRfiPdf(data: RfiFormData) {
 
   y += 20;
 
-  // Checklist table
-  const sym = (r: string) => r === 'pass' ? '✓' : r === 'fail' ? '✗' : r === 'na' ? 'N/A' : '';
+  // Checklist table - use ASCII-safe symbols for jsPDF compatibility
+  const sym = (r: string) => r === 'pass' ? 'Y' : r === 'fail' ? 'X' : r === 'na' ? 'N/A' : '';
 
   autoTable(doc, {
     startY: y,
     margin: { left: m, right: m },
-    head: [['WORKS INSPECTED', '✓/✗/NA', 'COMMENTS']],
+    head: [['WORKS INSPECTED', 'Y/X/NA', 'COMMENTS']],
     body: data.checklist_items.map((item) => [item.description, sym(item.result), item.comments || '']),
     styles: {
       fontSize: 7,
