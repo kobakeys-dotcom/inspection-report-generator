@@ -60,9 +60,9 @@ export const DEFAULT_CHECKLIST_ITEMS: ChecklistItem[] = [
 ];
 
 export const EMPTY_RFI: RfiFormData = {
-  ref_drawing: '',
-  work_site: '',
-  location: '',
+  ref_drawing: 'HDC(161)-MNS/DEV/2024/12',
+  work_site: 'Hiyaa Towers',
+  location: 'H11',
   inspection_date: '',
   inspection_time: '',
   weather_condition: '',
