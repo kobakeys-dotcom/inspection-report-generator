@@ -74,8 +74,8 @@ const RfiPage1 = ({ data, onChange }: RfiPage1Props) => {
               </tr>
             </tbody>
           </table>
-          <div className="flex items-center justify-center flex-1 pt-[8px]">
-            <img src={bltLogo} alt="BLT Brilliant" style={{ height: '42px' }} />
+          <div className="flex items-center justify-center flex-1">
+            <img src={bltLogo} alt="BLT Brilliant" style={{ height: '38px', marginTop: '8px' }} />
           </div>
         </div>
 
