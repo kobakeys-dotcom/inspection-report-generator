@@ -91,11 +91,11 @@ const RfiFormPage = ({ mode = 'create', initialData }: RfiFormPageProps) => {
             <Button
               variant="outline"
               size="sm"
-              onClick={handleExportPdf}
+              onClick={handleExportExcel}
               className="text-[11px] h-7 border-gray-400"
             >
               <FileDown className="h-3.5 w-3.5 mr-1" />
-              Export PDF
+              Export Excel
             </Button>
             <Button
               size="sm"
