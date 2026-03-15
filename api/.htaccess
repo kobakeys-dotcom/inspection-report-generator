@@ -8,4 +8,8 @@ RewriteRule ^(.*)$ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 # Route API requests
 RewriteRule ^rfis/?$ rfis.php [L,QSA]
 RewriteRule ^rfis/([0-9]+)/?$ rfis.php?id=$1 [L,QSA]
+RewriteRule ^cf-rfis/?$ cf-rfis.php [L,QSA]
+RewriteRule ^cf-rfis/([0-9]+)/?$ cf-rfis.php?id=$1 [L,QSA]
+RewriteRule ^other-rfis/?$ other-rfis.php [L,QSA]
+RewriteRule ^other-rfis/([0-9]+)/?$ other-rfis.php?id=$1 [L,QSA]
 RewriteRule ^checklist-defaults/?$ checklist-defaults.php [L,QSA]
