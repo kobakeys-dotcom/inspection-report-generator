@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { RfiFormData, EMPTY_RFI } from '@/types/rfi';
@@ -36,8 +36,8 @@ const RfiFormPage = ({ mode = 'create', initialData }: RfiFormPageProps) => {
         toast.success(`RFI IR-${result.inspection_no} created successfully`);
       }
       navigate('/');
-    } catch (error) {
-      toast.error('Failed to save RFI');
+    } catch {
+      toast.error('Failed to save RFI. Check API connection.');
     } finally {
       setSaving(false);
     }
@@ -53,34 +53,33 @@ const RfiFormPage = ({ mode = 'create', initialData }: RfiFormPageProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-100">
       {/* Top Bar */}
-      <div className="sticky top-0 z-10 bg-card border-b border-border shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-300 shadow-sm">
+        <div className="max-w-[850px] mx-auto px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
-              <ArrowLeft className="h-4 w-4 mr-1" />
+            <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="text-[12px]">
+              <ArrowLeft className="h-3.5 w-3.5 mr-1" />
               Back
             </Button>
-            <h1 className="text-lg font-bold text-primary">
+            <span className="text-[13px] font-bold text-black">
               {mode === 'edit' ? `Edit RFI IR-${formData.inspection_no}` : 'New RFI'}
-            </h1>
+            </span>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Step indicator */}
-            <div className="flex items-center gap-1 mr-4">
+            <div className="flex items-center gap-1 mr-3">
               <span
-                className={`px-3 py-1 rounded-full text-xs font-medium cursor-pointer transition-colors ${
-                  step === 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                className={`px-3 py-1 rounded text-[11px] font-medium cursor-pointer transition-colors border ${
+                  step === 1 ? 'bg-[#4CAF50] text-white border-[#4CAF50]' : 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200'
                 }`}
                 onClick={() => setStep(1)}
               >
                 Page 1 - Request
               </span>
               <span
-                className={`px-3 py-1 rounded-full text-xs font-medium cursor-pointer transition-colors ${
-                  step === 2 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                className={`px-3 py-1 rounded text-[11px] font-medium cursor-pointer transition-colors border ${
+                  step === 2 ? 'bg-[#4CAF50] text-white border-[#4CAF50]' : 'bg-gray-100 text-gray-600 border-gray-300 hover:bg-gray-200'
                 }`}
                 onClick={() => setStep(2)}
               >
@@ -88,42 +87,58 @@ const RfiFormPage = ({ mode = 'create', initialData }: RfiFormPageProps) => {
               </span>
             </div>
 
-            <Button variant="outline" size="sm" onClick={handleExportPdf}>
-              <FileDown className="h-4 w-4 mr-1" />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportPdf}
+              className="text-[11px] h-7 border-gray-400"
+            >
+              <FileDown className="h-3.5 w-3.5 mr-1" />
               Export PDF
             </Button>
-            <Button size="sm" onClick={handleSave} disabled={saving}>
-              <Save className="h-4 w-4 mr-1" />
+            <Button
+              size="sm"
+              onClick={handleSave}
+              disabled={saving}
+              className="text-[11px] h-7 bg-[#4CAF50] hover:bg-[#43A047] text-white"
+            >
+              <Save className="h-3.5 w-3.5 mr-1" />
               {saving ? 'Saving...' : 'Save'}
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Form Content */}
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        {step === 1 ? (
-          <RfiPage1 data={formData} onChange={handleChange} />
-        ) : (
-          <RfiPage2 data={formData} onChange={handleChange} />
-        )}
+      {/* Form Content - A4 paper style */}
+      <div className="max-w-[850px] mx-auto my-4">
+        <div className="bg-white shadow-md border border-gray-300 px-10 py-8">
+          {step === 1 ? (
+            <RfiPage1 data={formData} onChange={handleChange} />
+          ) : (
+            <RfiPage2 data={formData} onChange={handleChange} />
+          )}
+        </div>
 
         {/* Navigation buttons */}
-        <div className="flex justify-between mt-6">
+        <div className="flex justify-between mt-3 mb-6">
           <Button
             variant="outline"
+            size="sm"
             onClick={() => setStep(1)}
             disabled={step === 1}
+            className="text-[11px] h-7"
           >
-            <ArrowLeft className="h-4 w-4 mr-1" />
+            <ArrowLeft className="h-3.5 w-3.5 mr-1" />
             Previous: Request
           </Button>
           <Button
+            size="sm"
             onClick={() => setStep(2)}
             disabled={step === 2}
+            className="text-[11px] h-7 bg-[#4CAF50] hover:bg-[#43A047] text-white"
           >
             Next: Checklist
-            <ArrowRight className="h-4 w-4 ml-1" />
+            <ArrowRight className="h-3.5 w-3.5 ml-1" />
           </Button>
         </div>
       </div>

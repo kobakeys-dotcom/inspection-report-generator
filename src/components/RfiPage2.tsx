@@ -1,10 +1,13 @@
 import { RfiFormData, ChecklistItem, PROJECT_INFO } from '@/types/rfi';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import hdcLogo from '@/assets/hdc-logo.png';
 
 interface RfiPage2Props {
   data: RfiFormData;
   onChange: (data: Partial<RfiFormData>) => void;
 }
+
+const inputStyle = "w-full bg-[#FFFDE7] border-0 border-b border-black/30 px-1 py-0.5 text-[11px] focus:outline-none focus:bg-[#FFF9C4]";
+const cellStyle = "border border-black/40 px-2 py-1.5 text-[11px]";
 
 const RfiPage2 = ({ data, onChange }: RfiPage2Props) => {
   const updateChecklistItem = (index: number, updates: Partial<ChecklistItem>) => {
@@ -13,166 +16,207 @@ const RfiPage2 = ({ data, onChange }: RfiPage2Props) => {
     onChange({ checklist_items: items });
   };
 
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="border border-foreground/30 rounded">
-        {/* Header */}
-        <div className="border-b border-foreground/30 p-3">
-          <h1 className="text-lg font-bold text-primary text-center">
-            CHECKLIST FOR CLADDING INSTALLATION COMPLETION
-          </h1>
-        </div>
+    <div className="bg-white text-black" style={{ fontFamily: "'Segoe UI', Calibri, Arial, sans-serif", fontSize: '11px', lineHeight: '1.4' }}>
+      
+      {/* Title */}
+      <div className="text-center font-bold text-[13px] underline mb-3">
+        CHECKLIST FOR CLADDING INSTALLATION COMPLETION
+      </div>
 
-        {/* Project info (auto-filled from page 1) */}
-        <div className="border-b border-foreground/30 p-3">
-          <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm">
-            <div className="flex gap-2">
-              <span className="font-bold w-28">PROJECT:</span>
-              <span>{PROJECT_INFO.project.toUpperCase()}</span>
-            </div>
-            <div className="flex gap-2">
-              <span className="font-bold w-28">Inspection #:</span>
-              <span className="text-accent font-semibold">RFI-{data.inspection_no ?? 'Auto'}</span>
-            </div>
-            <div className="flex gap-2">
-              <span className="font-bold w-28">CLIENT:</span>
-              <span>{PROJECT_INFO.client.toUpperCase()}</span>
-            </div>
-            <div className="flex gap-2">
-              <span className="font-bold w-28">Date:</span>
-              <span>{data.inspection_date || '—'}</span>
-            </div>
-            <div className="flex gap-2">
-              <span className="font-bold w-28">CONTRACTOR:</span>
-              <span>{PROJECT_INFO.contractor.toUpperCase()}</span>
-            </div>
-            <div className="flex gap-2">
-              <span className="font-bold w-28">Time:</span>
-              <span>{data.inspection_time || '—'}</span>
-            </div>
-            <div className="flex gap-2">
-              <span className="font-bold w-28">CONTRACT NO:</span>
-              <span>{PROJECT_INFO.contract_no}</span>
-            </div>
-            <div className="flex gap-2">
-              <span className="font-bold w-28">Location:</span>
-              <span>{data.location || '—'}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Checklist Table */}
-        <div className="border-b border-foreground/30">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-muted">
-                <th className="border-b border-r border-foreground/30 p-2 text-left w-12">#</th>
-                <th className="border-b border-r border-foreground/30 p-2 text-left">WORKS INSPECTED</th>
-                <th className="border-b border-r border-foreground/30 p-2 text-center w-28">✓/✗/NA</th>
-                <th className="border-b border-foreground/30 p-2 text-left w-48">COMMENTS</th>
-              </tr>
-            </thead>
+      {/* Header with project info + HDC logo */}
+      <div className="flex justify-between items-start mb-3">
+        <div className="flex-1">
+          {/* Project info left */}
+          <table className="border-collapse text-[11px]">
             <tbody>
-              {data.checklist_items.map((item, index) => (
-                <tr key={index} className="border-b border-foreground/20 last:border-b-0">
-                  <td className="border-r border-foreground/20 p-2 text-center font-medium">
-                    {item.item_order}
-                  </td>
-                  <td className="border-r border-foreground/20 p-2">{item.description}</td>
-                  <td className="border-r border-foreground/20 p-1 text-center">
-                    <Select
-                      value={item.result || undefined}
-                      onValueChange={(val) =>
-                        updateChecklistItem(index, { result: val as ChecklistItem['result'] })
-                      }
-                    >
-                      <SelectTrigger className="h-8 text-xs bg-secondary/30">
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pass">✓ Pass</SelectItem>
-                        <SelectItem value="fail">✗ Fail</SelectItem>
-                        <SelectItem value="na">N/A</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </td>
-                  <td className="p-1">
-                    <input
-                      className="w-full border border-input rounded px-2 py-1 text-xs bg-secondary/30 focus:outline-none focus:ring-1 focus:ring-ring"
-                      value={item.comments}
-                      onChange={(e) => updateChecklistItem(index, { comments: e.target.value })}
-                      placeholder="Comments..."
-                    />
-                  </td>
-                </tr>
-              ))}
+              <tr>
+                <td className="pr-1 font-bold italic text-right" style={{ width: '100px' }}>PROJECT:</td>
+                <td className="font-bold px-1">{PROJECT_INFO.project.toUpperCase()}</td>
+              </tr>
+              <tr>
+                <td className="pr-1 font-bold italic text-right">CLIENT:</td>
+                <td className="font-bold px-1">{PROJECT_INFO.client.toUpperCase()}</td>
+              </tr>
+              <tr>
+                <td className="pr-1 font-bold italic text-right">CONTRACTOR:</td>
+                <td className="font-bold px-1">{PROJECT_INFO.contractor.toUpperCase()}</td>
+              </tr>
+              <tr>
+                <td className="pr-1 font-bold italic text-right">CONTRACT NO</td>
+                <td className="font-bold px-1">{PROJECT_INFO.contract_no}</td>
+              </tr>
             </tbody>
           </table>
         </div>
 
-        {/* Comments on completed works */}
-        <div className="border-b border-foreground/30 p-3">
-          <h2 className="text-sm font-bold mb-2 text-primary">Comments on completed works:</h2>
-          <textarea
-            className="w-full border border-input rounded px-2 py-1 text-sm bg-secondary/30 focus:outline-none focus:ring-1 focus:ring-ring"
-            value={data.completed_works_comments}
-            onChange={(e) => onChange({ completed_works_comments: e.target.value })}
-            rows={4}
-            placeholder="Enter comments on completed works..."
-          />
-        </div>
-
-        {/* Page 2 Representatives */}
-        <div className="p-3">
-          <div className="grid grid-cols-2 gap-6">
-            {/* Contractor Representative */}
-            <div>
-              <h2 className="text-sm font-bold mb-2 text-primary">Contractor Representative</h2>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium w-24 shrink-0">Name</label>
-                  <input
-                    className="flex-1 border border-input rounded px-2 py-1 text-sm bg-secondary/30 focus:outline-none focus:ring-1 focus:ring-ring"
-                    value={data.page2_contractor_name}
-                    onChange={(e) => onChange({ page2_contractor_name: e.target.value })}
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium w-24 shrink-0">Designation</label>
-                  <input
-                    className="flex-1 border border-input rounded px-2 py-1 text-sm bg-secondary/30 focus:outline-none focus:ring-1 focus:ring-ring"
-                    value={data.page2_contractor_designation}
-                    onChange={(e) => onChange({ page2_contractor_designation: e.target.value })}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Client Representative */}
-            <div>
-              <h2 className="text-sm font-bold mb-2 text-primary">Client Representative</h2>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium w-24 shrink-0">Name</label>
-                  <input
-                    className="flex-1 border border-input rounded px-2 py-1 text-sm bg-secondary/30 focus:outline-none focus:ring-1 focus:ring-ring"
-                    value={data.page2_client_name}
-                    onChange={(e) => onChange({ page2_client_name: e.target.value })}
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium w-24 shrink-0">Designation</label>
-                  <input
-                    className="flex-1 border border-input rounded px-2 py-1 text-sm bg-secondary/30 focus:outline-none focus:ring-1 focus:ring-ring"
-                    value={data.page2_client_designation}
-                    onChange={(e) => onChange({ page2_client_designation: e.target.value })}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* HDC logo */}
+        <img src={hdcLogo} alt="HDC" className="h-14 ml-4" />
       </div>
+
+      {/* Inspection info right-aligned table */}
+      <div className="flex justify-end mb-3">
+        <table className="border-collapse">
+          <tbody>
+            <tr>
+              <td className="border border-black/40 px-3 py-1 text-[11px] font-bold text-right">Inspection #:</td>
+              <td className="border border-black/40 px-3 py-1 text-[11px] text-center" style={{ minWidth: '120px' }}>
+                RFI-{data.inspection_no ?? '____'}
+              </td>
+            </tr>
+            <tr>
+              <td className="border border-black/40 px-3 py-1 text-[11px] font-bold text-right">Date:</td>
+              <td className="border border-black/40 px-3 py-1 text-[11px] text-center">
+                {formatDate(data.inspection_date)}
+              </td>
+            </tr>
+            <tr>
+              <td className="border border-black/40 px-3 py-1 text-[11px] font-bold text-right">Time:</td>
+              <td className="border border-black/40 px-3 py-1 text-[11px] text-center">{data.inspection_time || ''}</td>
+            </tr>
+            <tr>
+              <td className="border border-black/40 px-3 py-1 text-[11px] font-bold text-right">Location:</td>
+              <td className="border border-black/40 px-3 py-1 text-[11px] text-center">{data.location || ''}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Checklist Table */}
+      <table className="w-full border-collapse mb-3">
+        <thead>
+          <tr>
+            <th className="border border-black/40 px-2 py-1.5 text-[11px] font-bold text-center bg-white" style={{ width: '55%' }}>
+              WORKS INSPECTED
+            </th>
+            <th className="border border-black/40 px-2 py-1.5 text-[11px] font-bold text-center bg-white" style={{ width: '12%' }}>
+              ✓/✗/NA
+            </th>
+            <th className="border border-black/40 px-2 py-1.5 text-[11px] font-bold text-center bg-white">
+              COMMENTS
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.checklist_items.map((item, index) => (
+            <tr key={index}>
+              <td className={cellStyle}>{item.description}</td>
+              <td className={cellStyle + " text-center"}>
+                <select
+                  className="bg-[#FFFDE7] border border-black/20 rounded px-1 py-0.5 text-[11px] focus:outline-none w-full text-center"
+                  value={item.result}
+                  onChange={(e) => updateChecklistItem(index, { result: e.target.value as ChecklistItem['result'] })}
+                >
+                  <option value="">—</option>
+                  <option value="pass">✓</option>
+                  <option value="fail">✗</option>
+                  <option value="na">N/A</option>
+                </select>
+              </td>
+              <td className={cellStyle}>
+                <input
+                  className={inputStyle}
+                  value={item.comments}
+                  onChange={(e) => updateChecklistItem(index, { comments: e.target.value })}
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Comments on completed works */}
+      <table className="w-full border-collapse mb-4">
+        <tbody>
+          <tr>
+            <td className="border border-black/40 px-2 py-1 text-[11px] font-semibold bg-white" colSpan={2}>
+              Comments on completed works:
+            </td>
+          </tr>
+          {[...Array(10)].map((_, i) => (
+            <tr key={i}>
+              <td className="border border-black/40 px-2 py-1" colSpan={2}>
+                {i === 0 ? (
+                  <textarea
+                    className={inputStyle + " min-h-[16px] resize-none"}
+                    value={data.completed_works_comments}
+                    onChange={(e) => onChange({ completed_works_comments: e.target.value })}
+                    rows={1}
+                  />
+                ) : (
+                  <div className="h-[16px]" />
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Representatives - side by side */}
+      <div className="flex gap-0">
+        {/* Contractor Representative */}
+        <table className="border-collapse flex-1">
+          <tbody>
+            <tr>
+              <td colSpan={2} className="border border-black/40 px-2 py-1 text-[11px] font-bold text-center bg-white">
+                Contractor Representative
+              </td>
+            </tr>
+            <tr>
+              <td className="border border-black/40 px-2 py-1 text-[11px] font-semibold text-right" style={{ width: '100px' }}>Name:</td>
+              <td className="border border-black/40 px-2 py-1 text-[11px]">
+                <input className={inputStyle} value={data.page2_contractor_name} onChange={(e) => onChange({ page2_contractor_name: e.target.value })} />
+              </td>
+            </tr>
+            <tr>
+              <td className="border border-black/40 px-2 py-1 text-[11px] font-semibold text-right">Designation:</td>
+              <td className="border border-black/40 px-2 py-1 text-[11px]">
+                <input className={inputStyle} value={data.page2_contractor_designation} onChange={(e) => onChange({ page2_contractor_designation: e.target.value })} />
+              </td>
+            </tr>
+            <tr>
+              <td className="border border-black/40 px-2 py-1 text-[11px] font-semibold text-right">Signature:</td>
+              <td className="border border-black/40 px-2 py-1 text-[11px] h-8"></td>
+            </tr>
+          </tbody>
+        </table>
+
+        {/* Client Representative */}
+        <table className="border-collapse flex-1">
+          <tbody>
+            <tr>
+              <td colSpan={2} className="border border-black/40 px-2 py-1 text-[11px] font-bold text-center bg-white">
+                Client Representative
+              </td>
+            </tr>
+            <tr>
+              <td className="border border-black/40 px-2 py-1 text-[11px] font-semibold text-right" style={{ width: '100px' }}>Name:</td>
+              <td className="border border-black/40 px-2 py-1 text-[11px]">
+                <input className={inputStyle} value={data.page2_client_name} onChange={(e) => onChange({ page2_client_name: e.target.value })} />
+              </td>
+            </tr>
+            <tr>
+              <td className="border border-black/40 px-2 py-1 text-[11px] font-semibold text-right">Designation:</td>
+              <td className="border border-black/40 px-2 py-1 text-[11px]">
+                <input className={inputStyle} value={data.page2_client_designation} onChange={(e) => onChange({ page2_client_designation: e.target.value })} />
+              </td>
+            </tr>
+            <tr>
+              <td className="border border-black/40 px-2 py-1 text-[11px] font-semibold text-right">Signature:</td>
+              <td className="border border-black/40 px-2 py-1 text-[11px] h-8"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      {/* Page footer */}
+      <div className="text-right text-[9px] text-gray-500 mt-6">Page 2 of 2</div>
     </div>
   );
 };
