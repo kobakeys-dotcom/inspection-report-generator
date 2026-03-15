@@ -6,8 +6,8 @@ interface RfiPage2Props {
   onChange: (data: Partial<RfiFormData>) => void;
 }
 
-const inputStyle = "w-full bg-[#FFFDE7] border-0 border-b border-black/30 px-1 py-0.5 text-[11px] focus:outline-none focus:bg-[#FFF9C4]";
-const cellStyle = "border border-black/40 px-2 py-1.5 text-[11px]";
+const inp = "w-full bg-[#FFFDE7] border-0 border-b border-[#999] px-1 py-0 text-[10px] leading-[16px] focus:outline-none focus:bg-[#FFF9C4]";
+const td = "border-[0.5px] border-[#888] px-[6px] py-[3px] text-[10px] leading-[14px]";
 
 const RfiPage2 = ({ data, onChange }: RfiPage2Props) => {
   const updateChecklistItem = (index: number, updates: Partial<ChecklistItem>) => {
@@ -23,200 +23,164 @@ const RfiPage2 = ({ data, onChange }: RfiPage2Props) => {
   };
 
   return (
-    <div className="bg-white text-black" style={{ fontFamily: "'Segoe UI', Calibri, Arial, sans-serif", fontSize: '11px', lineHeight: '1.4' }}>
-      
-      {/* Title */}
-      <div className="text-center font-bold text-[13px] underline mb-3">
-        CHECKLIST FOR CLADDING INSTALLATION COMPLETION
-      </div>
+    <div className="bg-white text-black" style={{ fontFamily: "Calibri, 'Segoe UI', Arial, sans-serif", fontSize: '10px', lineHeight: '1.3' }}>
+      <div className="p-[20px]">
+        {/* Title + HDC logo */}
+        <div className="flex justify-between items-start mb-[8px]">
+          <div className="flex-1">
+            <div className="text-[12px] font-bold underline text-center pr-[80px]">
+              CHECKLIST FOR CLADDING INSTALLATION COMPLETION
+            </div>
+          </div>
+          <img src={hdcLogo} alt="HDC" className="h-[36px]" />
+        </div>
 
-      {/* Header with project info + HDC logo */}
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex-1">
-          {/* Project info left */}
-          <table className="border-collapse text-[11px]">
+        {/* Project info + inspection table */}
+        <div className="flex justify-between items-start mb-[10px]">
+          <div>
+            <table className="border-collapse text-[10px]">
+              <tbody>
+                <tr>
+                  <td className="pr-[4px] font-bold italic text-right py-[1px]" style={{ width: '90px' }}>PROJECT:</td>
+                  <td className="font-bold py-[1px]">{PROJECT_INFO.project.toUpperCase()}</td>
+                </tr>
+                <tr>
+                  <td className="pr-[4px] font-bold italic text-right py-[1px]">CLIENT:</td>
+                  <td className="font-bold py-[1px]">{PROJECT_INFO.client.toUpperCase()}</td>
+                </tr>
+                <tr>
+                  <td className="pr-[4px] font-bold italic text-right py-[1px]">CONTRACTOR:</td>
+                  <td className="font-bold py-[1px]">{PROJECT_INFO.contractor.toUpperCase()}</td>
+                </tr>
+                <tr>
+                  <td className="pr-[4px] font-bold italic text-right py-[1px]">CONTRACT NO</td>
+                  <td className="font-bold py-[1px]">{PROJECT_INFO.contract_no}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* Inspection info table */}
+          <table className="border-collapse">
             <tbody>
-              <tr>
-                <td className="pr-1 font-bold italic text-right" style={{ width: '100px' }}>PROJECT:</td>
-                <td className="font-bold px-1">{PROJECT_INFO.project.toUpperCase()}</td>
-              </tr>
-              <tr>
-                <td className="pr-1 font-bold italic text-right">CLIENT:</td>
-                <td className="font-bold px-1">{PROJECT_INFO.client.toUpperCase()}</td>
-              </tr>
-              <tr>
-                <td className="pr-1 font-bold italic text-right">CONTRACTOR:</td>
-                <td className="font-bold px-1">{PROJECT_INFO.contractor.toUpperCase()}</td>
-              </tr>
-              <tr>
-                <td className="pr-1 font-bold italic text-right">CONTRACT NO</td>
-                <td className="font-bold px-1">{PROJECT_INFO.contract_no}</td>
-              </tr>
+              {[
+                ['Inspection #:', `RFI-${data.inspection_no ?? '____'}`],
+                ['Date:', formatDate(data.inspection_date)],
+                ['Time:', data.inspection_time || ''],
+                ['Location:', data.location || ''],
+              ].map(([label, val]) => (
+                <tr key={label}>
+                  <td className="border-[0.5px] border-[#888] px-[6px] py-[2px] text-[10px] font-bold text-right" style={{ width: '75px' }}>{label}</td>
+                  <td className="border-[0.5px] border-[#888] px-[6px] py-[2px] text-[10px] text-center" style={{ minWidth: '100px' }}>{val}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
 
-        {/* HDC logo */}
-        <img src={hdcLogo} alt="HDC" className="h-14 ml-4" />
-      </div>
-
-      {/* Inspection info right-aligned table */}
-      <div className="flex justify-end mb-3">
-        <table className="border-collapse">
+        {/* Checklist Table */}
+        <table className="w-full border-collapse mb-[10px]">
+          <thead>
+            <tr>
+              <th className="border-[0.5px] border-[#888] px-[6px] py-[3px] text-[10px] font-bold text-center" style={{ width: '55%' }}>WORKS INSPECTED</th>
+              <th className="border-[0.5px] border-[#888] px-[6px] py-[3px] text-[10px] font-bold text-center" style={{ width: '10%' }}>✓/✗/NA</th>
+              <th className="border-[0.5px] border-[#888] px-[6px] py-[3px] text-[10px] font-bold text-center">COMMENTS</th>
+            </tr>
+          </thead>
           <tbody>
-            <tr>
-              <td className="border border-black/40 px-3 py-1 text-[11px] font-bold text-right">Inspection #:</td>
-              <td className="border border-black/40 px-3 py-1 text-[11px] text-center" style={{ minWidth: '120px' }}>
-                RFI-{data.inspection_no ?? '____'}
-              </td>
-            </tr>
-            <tr>
-              <td className="border border-black/40 px-3 py-1 text-[11px] font-bold text-right">Date:</td>
-              <td className="border border-black/40 px-3 py-1 text-[11px] text-center">
-                {formatDate(data.inspection_date)}
-              </td>
-            </tr>
-            <tr>
-              <td className="border border-black/40 px-3 py-1 text-[11px] font-bold text-right">Time:</td>
-              <td className="border border-black/40 px-3 py-1 text-[11px] text-center">{data.inspection_time || ''}</td>
-            </tr>
-            <tr>
-              <td className="border border-black/40 px-3 py-1 text-[11px] font-bold text-right">Location:</td>
-              <td className="border border-black/40 px-3 py-1 text-[11px] text-center">{data.location || ''}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      {/* Checklist Table */}
-      <table className="w-full border-collapse mb-3">
-        <thead>
-          <tr>
-            <th className="border border-black/40 px-2 py-1.5 text-[11px] font-bold text-center bg-white" style={{ width: '55%' }}>
-              WORKS INSPECTED
-            </th>
-            <th className="border border-black/40 px-2 py-1.5 text-[11px] font-bold text-center bg-white" style={{ width: '12%' }}>
-              ✓/✗/NA
-            </th>
-            <th className="border border-black/40 px-2 py-1.5 text-[11px] font-bold text-center bg-white">
-              COMMENTS
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.checklist_items.map((item, index) => (
-            <tr key={index}>
-              <td className={cellStyle}>{item.description}</td>
-              <td className={cellStyle + " text-center"}>
-                <select
-                  className="bg-[#FFFDE7] border border-black/20 rounded px-1 py-0.5 text-[11px] focus:outline-none w-full text-center"
-                  value={item.result}
-                  onChange={(e) => updateChecklistItem(index, { result: e.target.value as ChecklistItem['result'] })}
-                >
-                  <option value="">—</option>
-                  <option value="pass">✓</option>
-                  <option value="fail">✗</option>
-                  <option value="na">N/A</option>
-                </select>
-              </td>
-              <td className={cellStyle}>
-                <input
-                  className={inputStyle}
-                  value={item.comments}
-                  onChange={(e) => updateChecklistItem(index, { comments: e.target.value })}
-                />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* Comments on completed works */}
-      <table className="w-full border-collapse mb-4">
-        <tbody>
-          <tr>
-            <td className="border border-black/40 px-2 py-1 text-[11px] font-semibold bg-white" colSpan={2}>
-              Comments on completed works:
-            </td>
-          </tr>
-          {[...Array(10)].map((_, i) => (
-            <tr key={i}>
-              <td className="border border-black/40 px-2 py-1" colSpan={2}>
-                {i === 0 ? (
-                  <textarea
-                    className={inputStyle + " min-h-[16px] resize-none"}
-                    value={data.completed_works_comments}
-                    onChange={(e) => onChange({ completed_works_comments: e.target.value })}
-                    rows={1}
-                  />
-                ) : (
-                  <div className="h-[16px]" />
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-      {/* Representatives - side by side */}
-      <div className="flex gap-0">
-        {/* Contractor Representative */}
-        <table className="border-collapse flex-1">
-          <tbody>
-            <tr>
-              <td colSpan={2} className="border border-black/40 px-2 py-1 text-[11px] font-bold text-center bg-white">
-                Contractor Representative
-              </td>
-            </tr>
-            <tr>
-              <td className="border border-black/40 px-2 py-1 text-[11px] font-semibold text-right" style={{ width: '100px' }}>Name:</td>
-              <td className="border border-black/40 px-2 py-1 text-[11px]">
-                <input className={inputStyle} value={data.page2_contractor_name} onChange={(e) => onChange({ page2_contractor_name: e.target.value })} />
-              </td>
-            </tr>
-            <tr>
-              <td className="border border-black/40 px-2 py-1 text-[11px] font-semibold text-right">Designation:</td>
-              <td className="border border-black/40 px-2 py-1 text-[11px]">
-                <input className={inputStyle} value={data.page2_contractor_designation} onChange={(e) => onChange({ page2_contractor_designation: e.target.value })} />
-              </td>
-            </tr>
-            <tr>
-              <td className="border border-black/40 px-2 py-1 text-[11px] font-semibold text-right">Signature:</td>
-              <td className="border border-black/40 px-2 py-1 text-[11px] h-8"></td>
-            </tr>
+            {data.checklist_items.map((item, index) => (
+              <tr key={index}>
+                <td className={td}>{item.description}</td>
+                <td className={td + " text-center"}>
+                  <select
+                    className="bg-[#FFFDE7] border-[0.5px] border-[#aaa] px-[2px] py-0 text-[10px] focus:outline-none w-full text-center"
+                    value={item.result}
+                    onChange={(e) => updateChecklistItem(index, { result: e.target.value as ChecklistItem['result'] })}
+                  >
+                    <option value="">—</option>
+                    <option value="pass">✓</option>
+                    <option value="fail">✗</option>
+                    <option value="na">N/A</option>
+                  </select>
+                </td>
+                <td className={td}>
+                  <input className={inp} value={item.comments} onChange={(e) => updateChecklistItem(index, { comments: e.target.value })} />
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
 
-        {/* Client Representative */}
-        <table className="border-collapse flex-1">
+        {/* Comments on completed works */}
+        <table className="w-full border-collapse mb-[10px]">
           <tbody>
             <tr>
-              <td colSpan={2} className="border border-black/40 px-2 py-1 text-[11px] font-bold text-center bg-white">
-                Client Representative
+              <td className="border-[0.5px] border-[#888] px-[6px] py-[3px] text-[10px] font-semibold">
+                Comments on completed works:
               </td>
             </tr>
+            {[...Array(10)].map((_, i) => (
+              <tr key={i}>
+                <td className="border-[0.5px] border-[#888] px-[6px]" style={{ height: '16px' }}>
+                  {i === 0 ? (
+                    <textarea
+                      className="w-full bg-transparent border-0 px-0 py-0 text-[10px] leading-[14px] focus:outline-none resize-none"
+                      value={data.completed_works_comments}
+                      onChange={(e) => onChange({ completed_works_comments: e.target.value })}
+                      rows={1}
+                    />
+                  ) : null}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* Representatives side by side */}
+        <table className="w-full border-collapse">
+          <tbody>
             <tr>
-              <td className="border border-black/40 px-2 py-1 text-[11px] font-semibold text-right" style={{ width: '100px' }}>Name:</td>
-              <td className="border border-black/40 px-2 py-1 text-[11px]">
-                <input className={inputStyle} value={data.page2_client_name} onChange={(e) => onChange({ page2_client_name: e.target.value })} />
-              </td>
+              <td className="border-[0.5px] border-[#888] px-[6px] py-[3px] text-[10px] font-bold text-center" style={{ width: '50%' }}>Contractor Representative</td>
+              <td className="border-[0.5px] border-[#888] px-[6px] py-[3px] text-[10px] font-bold text-center">Client Representative</td>
             </tr>
-            <tr>
-              <td className="border border-black/40 px-2 py-1 text-[11px] font-semibold text-right">Designation:</td>
-              <td className="border border-black/40 px-2 py-1 text-[11px]">
-                <input className={inputStyle} value={data.page2_client_designation} onChange={(e) => onChange({ page2_client_designation: e.target.value })} />
-              </td>
-            </tr>
-            <tr>
-              <td className="border border-black/40 px-2 py-1 text-[11px] font-semibold text-right">Signature:</td>
-              <td className="border border-black/40 px-2 py-1 text-[11px] h-8"></td>
-            </tr>
+            {['Name:', 'Designation:', 'Signature:'].map((label, i) => {
+              const cFields = ['page2_contractor_name', 'page2_contractor_designation', ''] as const;
+              const clFields = ['page2_client_name', 'page2_client_designation', ''] as const;
+              return (
+                <tr key={label}>
+                  <td className="border-[0.5px] border-[#888] px-[6px] py-[2px] text-[10px]">
+                    <div className="flex items-center gap-[4px]">
+                      <span className="font-semibold w-[70px]">{label}</span>
+                      {i < 2 ? (
+                        <input
+                          className="flex-1 bg-transparent border-0 border-b border-[#999] px-0 py-0 text-[10px] leading-[16px] focus:outline-none"
+                          value={data[cFields[i] as keyof RfiFormData] as string || ''}
+                          onChange={(e) => onChange({ [cFields[i]]: e.target.value })}
+                        />
+                      ) : <div className="flex-1 h-[20px]" />}
+                    </div>
+                  </td>
+                  <td className="border-[0.5px] border-[#888] px-[6px] py-[2px] text-[10px]">
+                    <div className="flex items-center gap-[4px]">
+                      <span className="font-semibold w-[70px]">{label}</span>
+                      {i < 2 ? (
+                        <input
+                          className="flex-1 bg-transparent border-0 border-b border-[#999] px-0 py-0 text-[10px] leading-[16px] focus:outline-none"
+                          value={data[clFields[i] as keyof RfiFormData] as string || ''}
+                          onChange={(e) => onChange({ [clFields[i]]: e.target.value })}
+                        />
+                      ) : <div className="flex-1 h-[20px]" />}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
       {/* Page footer */}
-      <div className="text-right text-[9px] text-gray-500 mt-6">Page 2 of 2</div>
+      <div className="text-right text-[8px] text-[#999] px-[20px] pb-[8px]">Page 2 of 2</div>
     </div>
   );
 };
