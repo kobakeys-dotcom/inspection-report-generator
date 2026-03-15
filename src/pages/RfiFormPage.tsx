@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { RfiFormData, EMPTY_RFI } from '@/types/rfi';
 import { rfiApi } from '@/services/rfiApi';
-import { generateRfiPdf } from '@/utils/pdfExport';
+import { generateRfiExcel } from '@/utils/excelExport';
 import RfiPage1 from '@/components/RfiPage1';
 import RfiPage2 from '@/components/RfiPage2';
 import { ArrowLeft, ArrowRight, Save, FileDown } from 'lucide-react';
