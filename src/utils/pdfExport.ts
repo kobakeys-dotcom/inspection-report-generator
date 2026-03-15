@@ -34,7 +34,7 @@ export async function generateRfiPdf(data: RfiFormData) {
   let y = m;
   const lw = 0.2; // line weight matching original thin borders
   const green: [number, number, number] = [76, 175, 80];
-  const amber: [number, number, number] = [245, 194, 66];
+  const amber: [number, number, number] = [230, 168, 23];
   const rh = 5; // row height (slightly taller to match original)
   const fs = 7.5; // font size
   const rcvX = pageW / 2; // right column value start X
@@ -192,7 +192,11 @@ export async function generateRfiPdf(data: RfiFormData) {
   y += preH + 2;
 
   // ---- Comments (URBANCO USE ONLY) ----
-  fillBox(m, y, cW, rh, amber);
+  // Green accent on left edge of amber bar
+  doc.setFillColor(green[0], green[1], green[2]);
+  doc.rect(m, y, 1.2, rh, 'F');
+  fillBox(m + 1.2, y, cW - 1.2, rh, amber);
+  box(m, y, cW, rh);
   doc.setFont('helvetica', 'bold'); doc.setFontSize(fs); doc.setTextColor(0);
   doc.text('Comments (URBANCO USE ONLY):', pageW / 2, textY(y), { align: 'center' }); y += rh;
   box(m, y, 38, rh); box(m + 38, y, cW - 38, rh);
