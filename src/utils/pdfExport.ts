@@ -102,34 +102,44 @@ export async function generateRfiPdf(data: RfiFormData) {
   doc.line(m, y, rx, y); doc.setDrawColor(120); doc.setLineWidth(lw);
   y += 5;
 
-  // ---- Project Details (58% width) ----
-  const projW = cW * 0.58;
-  // Green bar without border
-  doc.setFillColor(green[0], green[1], green[2]);
-  doc.rect(m, y, projW, rh, 'F');
-  doc.setFontSize(fs); doc.setFont('helvetica', 'bold'); doc.setTextColor(255);
-  doc.text('Project Details', m + 2, textY(y)); doc.setTextColor(0); y += rh;
-
-  const projLabelW = 24;
+  // ---- Project Details ----
   const projRows = [
     ['Project', PROJECT_INFO.project],
     ['Contractor', PROJECT_INFO.contractor],
     ['Contract No', PROJECT_INFO.contract_no],
     ['Client', PROJECT_INFO.client],
   ];
+  const logoColW = 46;
+  const projLabelW = 24;
+  const projLeftW = cW - logoColW;
+
+  // Header spans full section width (including logo column)
+  fillBox(m, y, cW, rh, green);
+  doc.setFontSize(fs); doc.setFont('helvetica', 'bold'); doc.setTextColor(255);
+  doc.text('Project Details', m + 2, textY(y));
+  doc.setTextColor(0);
+  y += rh;
+
+  // Left two columns (4 rows)
+  const logoCellY = y;
   projRows.forEach(([l, v]) => {
-    box(m, y, projLabelW, rh); box(m + projLabelW, y, projW - projLabelW, rh);
-    label(l, m + 1.5, textY(y)); val(v, m + projLabelW + 1.5, textY(y)); y += rh;
+    box(m, y, projLabelW, rh);
+    box(m + projLabelW, y, projLeftW - projLabelW, rh);
+    label(l, m + 1.5, textY(y));
+    val(v, m + projLabelW + 1.5, textY(y));
+    y += rh;
   });
 
-  // BLT logo - centered in remaining space, vertically centered against table
-  const logoAreaX = m + projW;
-  const logoAreaW = cW - projW;
-  const logoW = 50;
-  const logoH = 17;
-  const logoX = logoAreaX + (logoAreaW - logoW) / 2;
-  const logoY = y - rh * 2.5 + (rh * 4 - logoH) / 2;
-  if (bltB64) doc.addImage(bltB64, 'PNG', logoX, logoY, logoW, logoH);
+  // Right merged logo cell across the 4 data rows
+  box(m + projLeftW, logoCellY, logoColW, rh * projRows.length);
+  if (bltB64) {
+    const logoW = 36;
+    const logoH = 13;
+    const logoX = m + projLeftW + (logoColW - logoW) / 2;
+    const logoY = logoCellY + (rh * projRows.length - logoH) / 2;
+    doc.addImage(bltB64, 'PNG', logoX, logoY, logoW, logoH);
+  }
+
   y += 3;
 
   // ---- Inspection Details ----
@@ -200,9 +210,11 @@ export async function generateRfiPdf(data: RfiFormData) {
   y += preH + 2;
 
   // ---- Comments (URBANCO USE ONLY) ----
-  fillBox(m, y, cW, rh, amber);
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(fs); doc.setTextColor(0);
-  doc.text('Comments (URBANCO USE ONLY):', pageW / 2, textY(y), { align: 'center' }); y += rh;
+  fillBox(m, y, cW, rh, green);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(fs); doc.setTextColor(255);
+  doc.text('Comments (URBANCO USE ONLY):', pageW / 2, textY(y), { align: 'center' });
+  doc.setTextColor(0);
+  y += rh;
   box(m, y, 38, rh); box(m + 38, y, cW - 38, rh);
   doc.setFont('helvetica', 'normal'); doc.setFontSize(6);
   doc.text('Relevant Sub-clause/Term', m + 1.5, textY(y)); y += rh;
