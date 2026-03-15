@@ -120,7 +120,7 @@ export async function generateRfiPdf(data: RfiFormData) {
   });
 
   // BLT logo - right of Project Details, vertically centered against data rows
-  if (bltB64) doc.addImage(bltB64, 'PNG', m + projW + 8, y - rh * 2.5, 38, 13);
+  if (bltB64) doc.addImage(bltB64, 'PNG', m + projW + 6, y - rh * 3.2, 50, 17);
   y += 3;
 
   // ---- Inspection Details ----
