@@ -175,7 +175,7 @@ const RfiPage1 = ({ data, onChange }: RfiPage1Props) => {
         {/* Comments (URBANCO USE ONLY) */}
         <table className="w-full border-collapse mb-[6px]">
           <tbody>
-            <tr><td colSpan={2} className="bg-[#E6A817] text-black text-[10px] font-semibold px-[6px] py-[3px] border-[0.5px] border-[#888] text-center border-l-[3px] border-l-[#4CAF50]">
+            <tr><td colSpan={2} className="bg-[#4CAF50] text-white text-[10px] font-semibold px-[6px] py-[3px] border-[0.5px] border-[#888] text-center">
               Comments (URBANCO USE ONLY):
             </td></tr>
             <tr>
