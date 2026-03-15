@@ -104,7 +104,9 @@ export async function generateRfiPdf(data: RfiFormData) {
 
   // ---- Project Details (58% width) ----
   const projW = cW * 0.58;
-  fillBox(m, y, projW, rh, green);
+  // Green bar without border
+  doc.setFillColor(green[0], green[1], green[2]);
+  doc.rect(m, y, projW, rh, 'F');
   doc.setFontSize(fs); doc.setFont('helvetica', 'bold'); doc.setTextColor(255);
   doc.text('Project Details', m + 2, textY(y)); doc.setTextColor(0); y += rh;
 
