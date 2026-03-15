@@ -122,8 +122,14 @@ export async function generateRfiPdf(data: RfiFormData) {
     label(l, m + 1.5, textY(y)); val(v, m + projLabelW + 1.5, textY(y)); y += rh;
   });
 
-  // BLT logo - right of Project Details, vertically centered against data rows
-  if (bltB64) doc.addImage(bltB64, 'PNG', m + projW + 8, y - rh * 3, 44, 15);
+  // BLT logo - centered in remaining space, vertically centered against table
+  const logoAreaX = m + projW;
+  const logoAreaW = cW - projW;
+  const logoW = 50;
+  const logoH = 17;
+  const logoX = logoAreaX + (logoAreaW - logoW) / 2;
+  const logoY = y - rh * 2.5 + (rh * 4 - logoH) / 2;
+  if (bltB64) doc.addImage(bltB64, 'PNG', logoX, logoY, logoW, logoH);
   y += 3;
 
   // ---- Inspection Details ----
