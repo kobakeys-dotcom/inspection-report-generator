@@ -48,18 +48,34 @@ const RfiPage1 = ({ data, onChange }: RfiPage1Props) => {
         <div className="h-[2.5px] bg-[#4CAF50] mt-[8px] mb-[10px]" />
 
         {/* Project Details + BLT logo side by side */}
-        <div className="flex items-start gap-[10px] mb-[6px]">
-          <table className="border-collapse" style={{ width: '60%' }}>
+        <div className="flex items-start mb-[6px]">
+          <table className="border-collapse" style={{ width: '55%' }}>
             <tbody>
-              <tr><td colSpan={2} className={greenBar}>Project Details</td></tr>
-              <tr><td className={tdLabel} style={{ width: '90px' }}>Project</td><td className={td}>{PROJECT_INFO.project}</td></tr>
-              <tr><td className={tdLabel}>Contractor</td><td className={td}>{PROJECT_INFO.contractor}</td></tr>
-              <tr><td className={tdLabel}>Contract No</td><td className={td}>{PROJECT_INFO.contract_no}</td></tr>
-              <tr><td className={tdLabel}>Client</td><td className={td}>{PROJECT_INFO.client}</td></tr>
+              <tr>
+                <td colSpan={2} className="bg-[#4CAF50] text-white text-[10px] font-bold px-[6px] py-[2px] border-l-[3px] border-l-[#FF8F00] border-[0.5px] border-[#888]">
+                  Project Details
+                </td>
+              </tr>
+              <tr>
+                <td className={tdLabel} style={{ width: '80px' }}>Project</td>
+                <td className={td}>{PROJECT_INFO.project}</td>
+              </tr>
+              <tr>
+                <td className={tdLabel}>Contractor</td>
+                <td className={td}>{PROJECT_INFO.contractor}</td>
+              </tr>
+              <tr>
+                <td className={tdLabel}>Contract No</td>
+                <td className={td}>{PROJECT_INFO.contract_no}</td>
+              </tr>
+              <tr>
+                <td className={tdLabel}>Client</td>
+                <td className={td}>{PROJECT_INFO.client}</td>
+              </tr>
             </tbody>
           </table>
-          <div className="flex items-center justify-center flex-1">
-            <img src={bltLogo} alt="BLT Brilliant" className="h-[48px]" />
+          <div className="flex items-center justify-center flex-1 pt-[8px]">
+            <img src={bltLogo} alt="BLT Brilliant" style={{ height: '42px' }} />
           </div>
         </div>
 
