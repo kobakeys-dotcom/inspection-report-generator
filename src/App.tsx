@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import RfiFormPage from "./pages/RfiFormPage";
 import RfiEditPage from "./pages/RfiEditPage";
 import CladdingFrameDashboard from "./pages/CladdingFrameDashboard";
+import CfRfiFormPage from "./pages/CfRfiFormPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/rfi/new" element={<RfiFormPage mode="create" />} />
             <Route path="/rfi/edit/:id" element={<RfiEditPage />} />
             <Route path="/cladding-frame" element={<CladdingFrameDashboard />} />
+            <Route path="/cladding-frame/new" element={<CfRfiFormPage mode="create" />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AppLayout>
