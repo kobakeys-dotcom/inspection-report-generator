@@ -1,4 +1,4 @@
-import { Layers, Frame } from "lucide-react";
+import { Layers, Frame, FileText } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
 import {
@@ -16,6 +16,7 @@ import {
 const menuItems = [
   { title: "Cladding RFI", url: "/", icon: Layers },
   { title: "Cladding Frame RFI", url: "/cladding-frame", icon: Frame },
+  { title: "Other RFI", url: "/other-rfi", icon: FileText },
 ];
 
 export function AppSidebar() {
