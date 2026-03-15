@@ -49,15 +49,15 @@ const RfiPage1 = ({ data, onChange }: RfiPage1Props) => {
 
         {/* Project Details + BLT logo side by side */}
         <div className="flex items-start mb-[6px]">
-          <table className="border-collapse" style={{ width: '55%' }}>
+          <table className="border-collapse" style={{ width: '58%' }}>
             <tbody>
               <tr>
-                <td colSpan={2} className="bg-[#4CAF50] text-white text-[10px] font-bold px-[6px] py-[2px] border-l-[3px] border-l-[#FF8F00] border-[0.5px] border-[#888]">
+                <td colSpan={2} className={greenBar}>
                   Project Details
                 </td>
               </tr>
               <tr>
-                <td className={tdLabel} style={{ width: '80px' }}>Project</td>
+                <td className={tdLabel} style={{ width: '100px' }}>Project</td>
                 <td className={td}>{PROJECT_INFO.project}</td>
               </tr>
               <tr>
@@ -74,8 +74,8 @@ const RfiPage1 = ({ data, onChange }: RfiPage1Props) => {
               </tr>
             </tbody>
           </table>
-          <div className="flex items-center justify-center flex-1">
-            <img src={bltLogo} alt="BLT Brilliant" style={{ height: '52px', marginTop: '6px' }} />
+          <div className="flex items-center justify-center flex-1 self-stretch">
+            <img src={bltLogo} alt="BLT Brilliant" style={{ height: '48px' }} />
           </div>
         </div>
 
