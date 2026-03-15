@@ -33,7 +33,7 @@ export async function generateRfiExcel(data: RfiFormData) {
   const buffer = await response.arrayBuffer();
   await workbook.xlsx.load(buffer);
 
-  const ws = workbook.getWorksheet(1);
+  const ws = workbook.worksheets[0];
   if (!ws) throw new Error('Worksheet not found');
 
   // Helper to safely set cell value while preserving formatting
