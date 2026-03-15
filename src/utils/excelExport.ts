@@ -101,6 +101,17 @@ export async function generateRfiExcel(data: RfiFormData) {
     return { col: labelCol + 4, value: '' };
   };
 
+  // ── Preserve all cells in a row (prevent ExcelJS merge corruption) ──
+  const preserveRow = (row: number) => {
+    const r = ws.getRow(row);
+    for (let c = 1; c <= 26; c++) {
+      const v = r.getCell(c).value;
+      if (v !== null && v !== undefined) {
+        r.getCell(c).value = v;
+      }
+    }
+  };
+
   // ── PAGE 1 ───────────────────────────────────────────────
 
   // Inspection No (top-right header)
@@ -109,40 +120,45 @@ export async function generateRfiExcel(data: RfiFormData) {
     setCell(inspNoCell.row, inspNoCell.col, `INSPECTION NO: IR-${data.inspection_no ?? '____'}`);
   }
 
-  // Ref Drawing & Date row — Ref Drawing value preserved from template
+  // Ref Drawing & Date row — LOCKED: preserve all original data, only write Date/Time from form
   const refDrawCell = findCell('Ref. Drawing');
   if (refDrawCell) {
-    // Re-write original Ref Drawing value to prevent ExcelJS merge corruption
-    const origRefDraw = readValueCell(refDrawCell.row, refDrawCell.col);
-    setCell(refDrawCell.row, origRefDraw.col, origRefDraw.value);
-
-    // Date on same row
+    preserveRow(refDrawCell.row);
+    // Only overwrite Date value if form has one
     const dateCol = findColInRow(refDrawCell.row, 'Date');
     if (dateCol) {
       const origDate = readValueCell(refDrawCell.row, dateCol);
-      setCell(refDrawCell.row, origDate.col, data.inspection_date ? formatDateDMY(data.inspection_date) : origDate.value);
+      if (data.inspection_date) {
+        setCell(refDrawCell.row, origDate.col, formatDateDMY(data.inspection_date));
+      }
     }
   }
 
-  // Work Site & Time row — Work Site value preserved from template
+  // Work Site & Time row — LOCKED: preserve all original data, only write Time from form
   const workSiteCell = findCell('Work Site');
   if (workSiteCell) {
-    // Re-write original Work Site value
-    const origWorkSite = readValueCell(workSiteCell.row, workSiteCell.col);
-    setCell(workSiteCell.row, origWorkSite.col, origWorkSite.value);
-
+    preserveRow(workSiteCell.row);
     const timeCol = findColInRow(workSiteCell.row, 'Time');
     if (timeCol) {
       const origTime = readValueCell(workSiteCell.row, timeCol);
-      setCell(workSiteCell.row, origTime.col, data.inspection_time || origTime.value);
+      if (data.inspection_time) {
+        setCell(workSiteCell.row, origTime.col, data.inspection_time);
+      }
     }
   }
 
-  // Location row — locked to original template value
+  // Location row — LOCKED: preserve original template value
   const locationCell = findCell('Location');
   if (locationCell && locationCell.row < 30) {
-    const origLoc = readValueCell(locationCell.row, locationCell.col);
-    setCell(locationCell.row, origLoc.col, origLoc.value);
+    preserveRow(locationCell.row);
+  }
+
+  // Project Details rows — LOCKED: preserve all original data
+  const projectCell = findCell('Project Details');
+  if (projectCell) {
+    for (let r = projectCell.row; r <= projectCell.row + 5; r++) {
+      preserveRow(r);
+    }
   }
 
   // Received by [Client] — Name/Designation/Date are label:value cells
