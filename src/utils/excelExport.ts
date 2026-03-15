@@ -100,19 +100,10 @@ export async function generateRfiExcel(data: RfiFormData) {
     setCell(inspNoCell.row, inspNoCell.col, `INSPECTION NO: IR-${data.inspection_no ?? '____'}`);
   }
 
-  // Ref Drawing & Date row
+  // Ref Drawing & Date row — Ref Drawing value kept from template (locked)
   const refDrawCell = findCell('Ref. Drawing');
   if (refDrawCell) {
-    // Value is in the merged area to the right of the label
-    // Scan for the value cell (typically col 5 onward)
-    for (let c = refDrawCell.col + 1; c <= refDrawCell.col + 6; c++) {
-      const v = ws.getRow(refDrawCell.row).getCell(c).value?.toString() || '';
-      if (v.length > 0 || c === refDrawCell.col + 4) {
-        setCell(refDrawCell.row, c, data.ref_drawing || '');
-        break;
-      }
-    }
-    // Date on same row
+    // Only write Date, keep Ref Drawing original
     const dateCol = findColInRow(refDrawCell.row, 'Date');
     if (dateCol) {
       for (let c = dateCol + 1; c <= dateCol + 6; c++) {
@@ -125,16 +116,10 @@ export async function generateRfiExcel(data: RfiFormData) {
     }
   }
 
-  // Work Site & Time row
+  // Work Site & Time row — Work Site value kept from template (locked)
   const workSiteCell = findCell('Work Site');
   if (workSiteCell) {
-    for (let c = workSiteCell.col + 1; c <= workSiteCell.col + 6; c++) {
-      const v = ws.getRow(workSiteCell.row).getCell(c).value?.toString() || '';
-      if (v.length > 0 || c === workSiteCell.col + 4) {
-        setCell(workSiteCell.row, c, data.work_site || '');
-        break;
-      }
-    }
+    // Only write Time, keep Work Site original
     const timeCol = findColInRow(workSiteCell.row, 'Time');
     if (timeCol) {
       for (let c = timeCol + 1; c <= timeCol + 6; c++) {
