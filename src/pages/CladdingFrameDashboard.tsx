@@ -21,8 +21,7 @@ const CladdingFrameDashboard = () => {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-6">
-        <div className="flex items-center justify-between mb-6">
-          <div />
+        <div className="flex items-center justify-end mb-6">
           <Button onClick={() => navigate('/cladding-frame/new')}>
             <Plus className="h-4 w-4 mr-1" />
             Create New Cladding Frame RFI
